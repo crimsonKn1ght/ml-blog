@@ -33,10 +33,16 @@
 						<section id="one">
 								<div class="container">
 									<header class="major">
-										<h2>Psuedo-labelling in Semi-Supervised Learning</h2>
-										<p>Leveraging unlabeled data for better model performance.</p>
+										<h2>Meta-stacking</h2>
+										<p>Combining prediction power of diverse machine learning models</p>
 									</header>
-									<p><strong>Introduction:</strong> Psuedo-labelling is a powerful method in the semi-supervised learning toolkit. It addresses the common challenge where labeled data is scarce but unlabeled data is plentiful.</p>
+									<h3><strong>Introduction:</strong></h3>
+									<p>Meta-stacking is an ensemble learning technoque that combines the predictions of multiple machine learning models to produce a final prediction which is more accurate than the individual predictions, usually.</p>
+
+									<h3>Architecture:</h3>
+									<p><strong>Level 0 (base learners):</strong> Diverse models like SVM, Random Forests, CNNs, etc are trained on data. Each model makes a prediction.</p>
+									<p><strong>Level 1 (Meta-learner):</strong> Predictions from base/level 0 are treated as features or input. A simple "meta-model" is trained on these new features to produce the final prediction.</p>
+									
 
 									<p><a href='https://www.kaggle.com/code/gourabr0y555/pseudo-labelling-ensemble'>Click here for notebook code.</a></p>
                                     <p>Incomplete.</p>
@@ -68,3 +74,4 @@
 	</body>
 
 </html>
+
