@@ -1,0 +1,113 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<title>Adversarial Validation — Gourab Roy</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="stylesheet" href="../assets/css/main.css" />
+		<link rel="stylesheet" href="../assets/css/techguru.css" />
+		<style>
+			section.blog-section {
+				min-height: 60vh;
+				padding-top: 2em;
+			}
+		</style>
+	</head>
+	<body class="is-preload">
+
+		<canvas id="particles-canvas"></canvas>
+
+		<section id="header">
+			<header>
+				<span class="image avatar"><img src="../images/avatar.jpg" alt="" /></span>
+				<h1 id="logo"><a href="../index.html"><span id="typed-name" data-text="Gourab Roy">Gourab Roy</span></a></h1>
+				<span class="role-badge">ML Engineer &amp; Researcher</span>
+				<p><span class="status-online"></span>AI/ML Enthusiast<br />
+				Deep Learning · LLMs · Computer Vision</p>
+			</header>
+			<nav id="nav">
+				<ul>
+					<li><a href="../index.html">← Home</a></li>
+					<li><a href="#intro" class="active">Introduction</a></li>
+					<li><a href="#concept">The Concept</a></li>
+					<li><a href="#implementation">Implementation</a></li>
+				</ul>
+			</nav>
+			<footer>
+				<ul class="icons">
+					<li><a href="#" class="icon brands fa-linkedin"><span class="label">LinkedIn</span></a></li>
+					<li><a href="#" class="icon brands fa-github"><span class="label">Github</span></a></li>
+					<li><a href="mailto:gouroy345@gmail.com" class="icon solid fa-envelope"><span class="label">Email</span></a></li>
+				</ul>
+			</footer>
+		</section>
+
+		<div id="wrapper">
+			<div id="main">
+				<section id="one">
+					<div class="container">
+						<header class="major">
+							<h2>Adversarial Validation</h2>
+							<p>Detecting distribution drift between your training and test data.</p>
+						</header>
+
+						<section id="intro" class="blog-section">
+							<h3>Introduction</h3>
+							<p>You train a model, it gets amazing cross-validation scores, but when you submit it to the leaderboard or deploy it, it fails miserably. Sound familiar? This is often due to <strong>distribution drift</strong> — your training data doesn't look like your test data.</p>
+							<p>Adversarial Validation is a clever technique to detect this problem before you waste hours tuning hyperparameters on a biased dataset.</p>
+						</section>
+
+						<section id="concept" class="blog-section">
+							<h3>The Concept</h3>
+							<p>The idea is simple: If your training and test sets come from the same distribution, they should be indistinguishable.</p>
+							<p>To test this, we intentionally try to break it:</p>
+							<ol style="list-style:decimal;padding-left:1.5em;color:var(--text-secondary);line-height:1.9;">
+								<li style="padding-left:0.25em;margin-bottom:0.5em;">Combine your Train and Test datasets.</li>
+								<li style="padding-left:0.25em;margin-bottom:0.5em;">Create a new target label: <code>0</code> for Training rows, <code>1</code> for Test rows.</li>
+								<li style="padding-left:0.25em;margin-bottom:0.5em;">Train a classifier (like a Random Forest or LGBM) to predict this label.</li>
+							</ol>
+							<p><strong>The Result:</strong> If this classifier yields an AUC of ~0.5, you are safe — the data is indistinguishable. However, if the AUC is high (e.g., 0.8 or 0.9), the model can easily tell the difference. This means your training data is fundamentally different from your test data, and any model trained on it will likely overfit to the past.</p>
+						</section>
+
+						<section id="implementation" class="blog-section">
+							<h3>Implementation &amp; Fixes</h3>
+							<p>Once you know you have a problem, you can use the Adversarial Validator to fix it:</p>
+							<ul>
+								<li><strong>Feature Selection:</strong> Check feature importance in the adversarial model. If one feature is the primary culprit (e.g., a shifting ID or timestamp), drop it.</li>
+								<li><strong>Sample Weighting:</strong> Drop the training samples that the model says look "least like the test set."</li>
+							</ul>
+							<p>I often use this in time-series competitions to align my local validation strategy with the public leaderboard.</p>
+							<ul class="actions">
+								<li><a href="#" class="button primary icon solid fa-code">View Python Snippet</a></li>
+							</ul>
+						</section>
+
+						<hr />
+
+						<ul class="actions">
+							<li><a href="../index.html" class="button">← Return Home</a></li>
+						</ul>
+					</div>
+				</section>
+			</div>
+
+			<section id="footer">
+				<div class="container">
+					<ul class="copyright">
+						<li>&copy; Gourab Roy. All rights reserved.</li>
+					</ul>
+				</div>
+			</section>
+		</div>
+
+		<script src="../assets/js/jquery.min.js"></script>
+		<script src="../assets/js/jquery.scrollex.min.js"></script>
+		<script src="../assets/js/jquery.scrolly.min.js"></script>
+		<script src="../assets/js/browser.min.js"></script>
+		<script src="../assets/js/breakpoints.min.js"></script>
+		<script src="../assets/js/util.js"></script>
+		<script src="../assets/js/main.js"></script>
+		<script src="../assets/js/techguru.js"></script>
+
+	</body>
+</html>

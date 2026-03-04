@@ -1,0 +1,108 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<title>Time-Series Forecasting with RNNs — Gourab Roy</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="stylesheet" href="../assets/css/main.css" />
+		<link rel="stylesheet" href="../assets/css/techguru.css" />
+		<style>
+			section.blog-section {
+				min-height: 60vh;
+				padding-top: 2em;
+			}
+		</style>
+	</head>
+	<body class="is-preload">
+
+		<canvas id="particles-canvas"></canvas>
+
+		<section id="header">
+			<header>
+				<span class="image avatar"><img src="../images/avatar.jpg" alt="" /></span>
+				<h1 id="logo"><a href="../index.html"><span id="typed-name" data-text="Gourab Roy">Gourab Roy</span></a></h1>
+				<span class="role-badge">ML Engineer &amp; Researcher</span>
+				<p><span class="status-online"></span>AI/ML Enthusiast<br />
+				Deep Learning · LLMs · Computer Vision</p>
+			</header>
+			<nav id="nav">
+				<ul>
+					<li><a href="../index.html">← Home</a></li>
+					<li><a href="#intro" class="active">What is an RNN?</a></li>
+					<li><a href="#project">The Project</a></li>
+					<li><a href="#code">Code &amp; Notebook</a></li>
+				</ul>
+			</nav>
+			<footer>
+				<ul class="icons">
+					<li><a href="#" class="icon brands fa-linkedin"><span class="label">LinkedIn</span></a></li>
+					<li><a href="#" class="icon brands fa-github"><span class="label">Github</span></a></li>
+					<li><a href="mailto:gouroy345@gmail.com" class="icon solid fa-envelope"><span class="label">Email</span></a></li>
+				</ul>
+			</footer>
+		</section>
+
+		<div id="wrapper">
+			<div id="main">
+				<section id="one">
+					<div class="container">
+						<header class="major">
+							<h2>Time-Series Forecasting with RNNs</h2>
+							<p>Predicting daily climate data using sequence modeling</p>
+						</header>
+
+						<section id="intro" class="blog-section">
+							<h3>What is a Time-Series RNN?</h3>
+							<p>A Recurrent Neural Network (RNN) is a type of neural network specifically designed to recognize patterns in sequences of data. Unlike standard machine learning models that process each data point independently, an RNN has an internal "memory."</p>
+							<p>As it processes a sequence, it passes information from previous steps forward to the current step. This makes it highly effective for time-series forecasting, where the past (like the weather over the last week) heavily influences the future (tomorrow's weather).</p>
+						</section>
+
+						<section id="project" class="blog-section">
+							<h3>About This Project</h3>
+							<p>This project applies an RNN to forecast climate data using the <strong>Daily Delhi Climate</strong> dataset. The primary goal is to predict the next day's mean temperature (<code>meantemp</code>).</p>
+							<p>To do this, we use a <strong>sliding-window approach</strong>. The model doesn't just look at today's weather to predict tomorrow's; it looks at a rolling window of recent days. The pipeline involves:</p>
+							<ul>
+								<li>Extracting temporal features from raw date data.</li>
+								<li>Normalizing features with Min-Max scaling.</li>
+								<li>Formatting the data into sequential sliding-window blocks.</li>
+								<li>Training a vanilla RNN to learn the temporal patterns and output a final prediction.</li>
+							</ul>
+						</section>
+
+						<section id="code" class="blog-section">
+							<h3>See it in Action</h3>
+							<p>Check out the full implementation, dataset processing, and model training in my Kaggle notebook.</p>
+							<ul class="actions">
+								<li><a href="https://www.kaggle.com/code/gourabr0y555/time-series-forecasting-with-sliding-window-ds" class="button primary icon solid fa-code" target="_blank">View Notebook Code</a></li>
+							</ul>
+						</section>
+
+						<hr />
+
+						<ul class="actions">
+							<li><a href="../index.html" class="button">← Return Home</a></li>
+						</ul>
+					</div>
+				</section>
+			</div>
+
+			<section id="footer">
+				<div class="container">
+					<ul class="copyright">
+						<li>&copy; Gourab Roy. All rights reserved.</li>
+					</ul>
+				</div>
+			</section>
+		</div>
+
+		<script src="../assets/js/jquery.min.js"></script>
+		<script src="../assets/js/jquery.scrollex.min.js"></script>
+		<script src="../assets/js/jquery.scrolly.min.js"></script>
+		<script src="../assets/js/browser.min.js"></script>
+		<script src="../assets/js/breakpoints.min.js"></script>
+		<script src="../assets/js/util.js"></script>
+		<script src="../assets/js/main.js"></script>
+		<script src="../assets/js/techguru.js"></script>
+
+	</body>
+</html>

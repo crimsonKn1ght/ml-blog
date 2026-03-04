@@ -1,0 +1,112 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<title>Meta-Stacking — Gourab Roy</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="stylesheet" href="../assets/css/main.css" />
+		<link rel="stylesheet" href="../assets/css/techguru.css" />
+		<style>
+			section.blog-section {
+				min-height: 60vh;
+				padding-top: 2em;
+			}
+		</style>
+	</head>
+	<body class="is-preload">
+
+		<canvas id="particles-canvas"></canvas>
+
+		<section id="header">
+			<header>
+				<span class="image avatar"><img src="../images/avatar.jpg" alt="" /></span>
+				<h1 id="logo"><a href="../index.html"><span id="typed-name" data-text="Gourab Roy">Gourab Roy</span></a></h1>
+				<span class="role-badge">ML Engineer &amp; Researcher</span>
+				<p><span class="status-online"></span>AI/ML Enthusiast<br />
+				Deep Learning · LLMs · Computer Vision</p>
+			</header>
+			<nav id="nav">
+				<ul>
+					<li><a href="../index.html">← Home</a></li>
+					<li><a href="#intro" class="active">Introduction</a></li>
+					<li><a href="#architecture">Architecture</a></li>
+					<li><a href="#code">Code &amp; Notebook</a></li>
+				</ul>
+			</nav>
+			<footer>
+				<ul class="icons">
+					<li><a href="#" class="icon brands fa-linkedin"><span class="label">LinkedIn</span></a></li>
+					<li><a href="#" class="icon brands fa-github"><span class="label">Github</span></a></li>
+					<li><a href="mailto:gouroy345@gmail.com" class="icon solid fa-envelope"><span class="label">Email</span></a></li>
+				</ul>
+			</footer>
+		</section>
+
+		<div id="wrapper">
+			<div id="main">
+				<section id="one">
+					<div class="container">
+						<header class="major">
+							<h2>Meta-Stacking</h2>
+							<p>Getting diverse models to work together for better predictions</p>
+						</header>
+
+						<div>
+							<img src='../images/meta-stacking.png' alt="Meta Stacking Architecture Diagram" style="width: 100%; height: auto;">
+						</div>
+
+						<section id="intro" class="blog-section">
+							<h3>Introduction</h3>
+							<p>If you ask one expert for an opinion, they might be wrong. If you ask ten experts and take a vote, you're much more likely to get the right answer. That's the basic idea behind Meta-stacking.</p>
+							<p>It's an ensemble technique, but instead of just averaging the results of different models, we train a "manager" model (the meta-learner) to figure out which "employee" models (base learners) are telling the truth in different situations. It learns to weight their opinions to produce a final prediction that is usually more accurate than any single model could achieve on its own.</p>
+						</section>
+
+						<section id="architecture" class="blog-section">
+							<h3>The Architecture</h3>
+							<p>The process generally happens in two distinct levels. Think of it as a hierarchy:</p>
+
+							<h4>Level 0: The Specialists (Base Learners)</h4>
+							<p>First, we train a variety of different models on our data. Diversity is key here. You might mix a Random Forest, an SVM, and a Neural Network. Since they all learn differently, they make different kinds of mistakes. We need them to predict results on the data, but we have to be careful not to let them "cheat" by seeing the answers first. This is where <strong>Out-of-Fold (OOF) predictions</strong> come in — we use cross-validation to generate predictions for data points the model hasn't seen during training.</p>
+
+							<h4>Level 1: The Manager (Meta-Learner)</h4>
+							<p>Now we have a new dataset. Instead of the original raw features, our input is now the predictions made by the Level 0 models. The Meta-learner (usually a simpler model like Linear Regression or a shallow Gradient Boosting model) trains on these inputs.</p>
+							<p>Its job is effectively to learn: <em>"Okay, when the Random Forest says 'Yes' but the SVM says 'No', the Random Forest is usually right. But if the Neural Net agrees with the SVM, I should trust them instead."</em></p>
+						</section>
+
+						<section id="code" class="blog-section">
+							<h3>See it in Action</h3>
+							<p>I've put together a notebook demonstrating how to implement this using Python. It covers the OOF prediction generation and the final stacking stage.</p>
+							<ul class="actions">
+								<li><a href="https://www.kaggle.com/code/gourabr0y555/pseudo-labelling-ensemble" class="button primary icon solid fa-code">View Notebook Code</a></li>
+							</ul>
+						</section>
+
+						<hr />
+
+						<ul class="actions">
+							<li><a href="../index.html" class="button">← Return Home</a></li>
+						</ul>
+					</div>
+				</section>
+			</div>
+
+			<section id="footer">
+				<div class="container">
+					<ul class="copyright">
+						<li>&copy; Gourab Roy. All rights reserved.</li>
+					</ul>
+				</div>
+			</section>
+		</div>
+
+		<script src="../assets/js/jquery.min.js"></script>
+		<script src="../assets/js/jquery.scrollex.min.js"></script>
+		<script src="../assets/js/jquery.scrolly.min.js"></script>
+		<script src="../assets/js/browser.min.js"></script>
+		<script src="../assets/js/breakpoints.min.js"></script>
+		<script src="../assets/js/util.js"></script>
+		<script src="../assets/js/main.js"></script>
+		<script src="../assets/js/techguru.js"></script>
+
+	</body>
+</html>
