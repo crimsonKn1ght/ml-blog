@@ -1,0 +1,109 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<title>Solving CartPole with a Deep Q-Network — Gourab Roy</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="stylesheet" href="../assets/css/main.css" />
+		<link rel="stylesheet" href="../assets/css/techguru.css" />
+		<style>
+			section.blog-section {
+				min-height: 60vh;
+				padding-top: 2em;
+			}
+		</style>
+	</head>
+	<body class="is-preload">
+
+		<canvas id="particles-canvas"></canvas>
+
+		<section id="header">
+			<header>
+				<span class="image avatar"><img src="../images/avatar.jpg" alt="" /></span>
+				<h1 id="logo"><a href="../index.html"><span id="typed-name" data-text="Gourab Roy">Gourab Roy</span></a></h1>
+				<span class="role-badge">ML Engineer &amp; Researcher</span>
+				<p><span class="status-online"></span>AI/ML Enthusiast<br />
+				Deep Learning · LLMs · Computer Vision</p>
+			</header>
+			<nav id="nav">
+				<ul>
+					<li><a href="../index.html">← Home</a></li>
+					<li><a href="#intro" class="active">Introduction</a></li>
+					<li><a href="#agent">The DQN Agent</a></li>
+					<li><a href="#training">Training &amp; Notebook</a></li>
+				</ul>
+			</nav>
+			<footer>
+				<ul class="icons">
+					<li><a href="#" class="icon brands fa-linkedin"><span class="label">LinkedIn</span></a></li>
+					<li><a href="#" class="icon brands fa-github"><span class="label">Github</span></a></li>
+					<li><a href="mailto:gouroy345@gmail.com" class="icon solid fa-envelope"><span class="label">Email</span></a></li>
+				</ul>
+			</footer>
+		</section>
+
+		<div id="wrapper">
+			<div id="main">
+				<section id="one">
+					<div class="container">
+						<header class="major">
+							<h2>Solving CartPole with a Deep Q-Network</h2>
+							<p>Teaching an agent to balance a pole using reinforcement learning and PyTorch</p>
+						</header>
+
+						<section id="intro" class="blog-section">
+							<h3>Introduction</h3>
+							<p>CartPole-v1 is a classic reinforcement learning benchmark from OpenAI Gym. A cart sits on a frictionless track, with a pole balanced on top. At each timestep, the agent chooses to push the cart left or right. The environment rewards the agent with +1 for every timestep the pole stays upright. An episode ends when the pole tilts more than 15° from vertical, or when the cart moves outside the track bounds.</p>
+							<p>The challenge is that the agent receives no explicit instructions — it must learn the correct control policy purely from trial and error, guided only by the reward signal.</p>
+						</section>
+
+						<section id="agent" class="blog-section">
+							<h3>The DQN Agent</h3>
+							<p>Deep Q-Networks extend classical Q-learning by approximating the Q-function with a neural network. The architecture used here:</p>
+							<ul>
+								<li><strong>Q-Network:</strong> <code>Linear(4→128) → ReLU → Linear(128→128) → ReLU → Linear(128→2)</code>. Input is the 4-dimensional state vector; output is Q-values for each of the 2 actions.</li>
+								<li><strong>Experience Replay:</strong> Transitions <code>(s, a, r, s')</code> are stored in a replay buffer (deque). Mini-batches are sampled randomly to break temporal correlation between updates.</li>
+								<li><strong>Online + Target Networks:</strong> Two identical networks are maintained. The online network is updated every step; the target network is synced periodically to stabilize training.</li>
+								<li><strong>Epsilon-Greedy Exploration:</strong> ε decays from 1.0 to 0.01 over training, shifting from pure exploration to exploitation as the agent learns.</li>
+							</ul>
+							<p>The Bellman target used for training: <code>r + γ · max Q(s', a')</code> with discount factor γ = 0.99.</p>
+						</section>
+
+						<section id="training" class="blog-section">
+							<h3>Training &amp; Notebook</h3>
+							<p>Training runs for 500 episodes. The rolling 100-episode average reward climbs from roughly 20 at the start to consistently above 200 by the end — surpassing the standard "solved" threshold of 195.</p>
+							<p>Greedy evaluation across 10 held-out test episodes yields a <strong>mean reward of 226.2</strong>, demonstrating that the agent has learned a robust balancing policy.</p>
+							<ul class="actions">
+								<li><a href="https://www.kaggle.com/code/gourabr0y555/openai-cartpole-problem" class="button primary icon solid fa-code" target="_blank">View Notebook Code</a></li>
+							</ul>
+						</section>
+
+						<hr />
+
+						<ul class="actions">
+							<li><a href="../index.html" class="button">← Return Home</a></li>
+						</ul>
+					</div>
+				</section>
+			</div>
+
+			<section id="footer">
+				<div class="container">
+					<ul class="copyright">
+						<li>&copy; Gourab Roy. All rights reserved.</li>
+					</ul>
+				</div>
+			</section>
+		</div>
+
+		<script src="../assets/js/jquery.min.js"></script>
+		<script src="../assets/js/jquery.scrollex.min.js"></script>
+		<script src="../assets/js/jquery.scrolly.min.js"></script>
+		<script src="../assets/js/browser.min.js"></script>
+		<script src="../assets/js/breakpoints.min.js"></script>
+		<script src="../assets/js/util.js"></script>
+		<script src="../assets/js/main.js"></script>
+		<script src="../assets/js/techguru.js"></script>
+
+	</body>
+</html>

@@ -1,0 +1,107 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<title>K-Means Clustering with Inertia Measurement — Gourab Roy</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="stylesheet" href="../assets/css/main.css" />
+		<link rel="stylesheet" href="../assets/css/techguru.css" />
+		<style>
+			section.blog-section {
+				min-height: 60vh;
+				padding-top: 2em;
+			}
+		</style>
+	</head>
+	<body class="is-preload">
+
+		<canvas id="particles-canvas"></canvas>
+
+		<section id="header">
+			<header>
+				<span class="image avatar"><img src="../images/avatar.jpg" alt="" /></span>
+				<h1 id="logo"><a href="../index.html"><span id="typed-name" data-text="Gourab Roy">Gourab Roy</span></a></h1>
+				<span class="role-badge">ML Engineer &amp; Researcher</span>
+				<p><span class="status-online"></span>AI/ML Enthusiast<br />
+				Deep Learning · LLMs · Computer Vision</p>
+			</header>
+			<nav id="nav">
+				<ul>
+					<li><a href="../index.html">← Home</a></li>
+					<li><a href="#intro" class="active">Introduction</a></li>
+					<li><a href="#algorithm">The Algorithm</a></li>
+					<li><a href="#elbow">Elbow Method &amp; Notebook</a></li>
+				</ul>
+			</nav>
+			<footer>
+				<ul class="icons">
+					<li><a href="#" class="icon brands fa-linkedin"><span class="label">LinkedIn</span></a></li>
+					<li><a href="#" class="icon brands fa-github"><span class="label">Github</span></a></li>
+					<li><a href="mailto:gouroy345@gmail.com" class="icon solid fa-envelope"><span class="label">Email</span></a></li>
+				</ul>
+			</footer>
+		</section>
+
+		<div id="wrapper">
+			<div id="main">
+				<section id="one">
+					<div class="container">
+						<header class="major">
+							<h2>K-Means Clustering with Inertia Measurement</h2>
+							<p>Building K-Means from scratch and finding the optimal K via the Elbow method</p>
+						</header>
+
+						<section id="intro" class="blog-section">
+							<h3>Introduction</h3>
+							<p>K-Means is an unsupervised learning algorithm that partitions data into K clusters by minimizing within-cluster variance. Given a set of points, it finds K centroids such that each point belongs to the cluster with the nearest centroid — and the total squared distance from points to their centroids (inertia) is minimized.</p>
+							<p>This implementation builds K-Means entirely from scratch in pure NumPy — no scikit-learn clustering is used. The goal is to expose every moving part of the algorithm and understand exactly why it converges to its solution.</p>
+						</section>
+
+						<section id="algorithm" class="blog-section">
+							<h3>The Algorithm</h3>
+							<p>K-Means alternates between two steps until convergence:</p>
+							<ul>
+								<li><strong>Assignment step:</strong> Each data point is assigned to the nearest centroid using Euclidean distance. This partitions all points into K groups.</li>
+								<li><strong>Update step:</strong> Each centroid is recomputed as the mean of all points currently assigned to it. Centroids shift to the center of their cluster.</li>
+							</ul>
+							<p>These two steps repeat until centroids stop moving — i.e., assignments no longer change between iterations. <strong>Inertia</strong> is calculated as the sum of squared distances from each point to its assigned centroid, and serves as the objective function being minimized.</p>
+						</section>
+
+						<section id="elbow" class="blog-section">
+							<h3>Elbow Method &amp; Notebook</h3>
+							<p>To find the optimal number of clusters, the algorithm is run for K = 1 through 9 and inertia is recorded at each step. Plotting inertia vs. K reveals a curve that bends sharply at the optimal K — this bend is the "elbow."</p>
+							<p>For this dataset, the elbow is clearly visible at <strong>K = 4</strong>, indicating four natural groupings in the data. Beyond K = 4, additional clusters provide diminishing returns in reducing inertia.</p>
+							<ul class="actions">
+								<li><a href="https://www.kaggle.com/code/gourabr0y555/k-means-clustering-with-inertia-measurement" class="button primary icon solid fa-code" target="_blank">View Notebook Code</a></li>
+							</ul>
+						</section>
+
+						<hr />
+
+						<ul class="actions">
+							<li><a href="../index.html" class="button">← Return Home</a></li>
+						</ul>
+					</div>
+				</section>
+			</div>
+
+			<section id="footer">
+				<div class="container">
+					<ul class="copyright">
+						<li>&copy; Gourab Roy. All rights reserved.</li>
+					</ul>
+				</div>
+			</section>
+		</div>
+
+		<script src="../assets/js/jquery.min.js"></script>
+		<script src="../assets/js/jquery.scrollex.min.js"></script>
+		<script src="../assets/js/jquery.scrolly.min.js"></script>
+		<script src="../assets/js/browser.min.js"></script>
+		<script src="../assets/js/breakpoints.min.js"></script>
+		<script src="../assets/js/util.js"></script>
+		<script src="../assets/js/main.js"></script>
+		<script src="../assets/js/techguru.js"></script>
+
+	</body>
+</html>

@@ -1,0 +1,109 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<title>Variational Autoencoder on MNIST — Gourab Roy</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="stylesheet" href="../assets/css/main.css" />
+		<link rel="stylesheet" href="../assets/css/techguru.css" />
+		<style>
+			section.blog-section {
+				min-height: 60vh;
+				padding-top: 2em;
+			}
+		</style>
+	</head>
+	<body class="is-preload">
+
+		<canvas id="particles-canvas"></canvas>
+
+		<section id="header">
+			<header>
+				<span class="image avatar"><img src="../images/avatar.jpg" alt="" /></span>
+				<h1 id="logo"><a href="../index.html"><span id="typed-name" data-text="Gourab Roy">Gourab Roy</span></a></h1>
+				<span class="role-badge">ML Engineer &amp; Researcher</span>
+				<p><span class="status-online"></span>AI/ML Enthusiast<br />
+				Deep Learning · LLMs · Computer Vision</p>
+			</header>
+			<nav id="nav">
+				<ul>
+					<li><a href="../index.html">← Home</a></li>
+					<li><a href="#intro" class="active">Introduction</a></li>
+					<li><a href="#architecture">Architecture &amp; Training</a></li>
+					<li><a href="#generation">Generation &amp; Notebook</a></li>
+				</ul>
+			</nav>
+			<footer>
+				<ul class="icons">
+					<li><a href="#" class="icon brands fa-linkedin"><span class="label">LinkedIn</span></a></li>
+					<li><a href="#" class="icon brands fa-github"><span class="label">Github</span></a></li>
+					<li><a href="mailto:gouroy345@gmail.com" class="icon solid fa-envelope"><span class="label">Email</span></a></li>
+				</ul>
+			</footer>
+		</section>
+
+		<div id="wrapper">
+			<div id="main">
+				<section id="one">
+					<div class="container">
+						<header class="major">
+							<h2>Variational Autoencoder on MNIST</h2>
+							<p>Learning a structured latent space for image generation with PyTorch</p>
+						</header>
+
+						<section id="intro" class="blog-section">
+							<h3>Introduction</h3>
+							<p>A standard autoencoder compresses an input into a fixed latent vector and then reconstructs it. The latent space, however, has no guaranteed structure — points in it may not correspond to meaningful or interpolatable representations.</p>
+							<p>A Variational Autoencoder (VAE) solves this by mapping inputs to a <em>distribution</em> over the latent space, parameterized by a mean vector μ and a log-variance vector log σ². At inference time, a latent vector is sampled from this distribution. The <strong>reparameterization trick</strong> — <code>z = μ + σ · ε</code> where <code>ε ~ N(0, I)</code> — makes this sampling step differentiable, allowing gradients to flow through the stochastic node during backpropagation.</p>
+						</section>
+
+						<section id="architecture" class="blog-section">
+							<h3>Architecture &amp; Training</h3>
+							<p>The model operates on flattened 28×28 MNIST images (784 dimensions):</p>
+							<ul>
+								<li><strong>Encoder:</strong> <code>Linear(784→512) + ReLU</code>, then two parallel heads: <code>fc_mu</code> and <code>fc_logvar</code>, each outputting a 40-dimensional vector.</li>
+								<li><strong>Latent space:</strong> Dimension 40. The reparameterization trick samples <code>z</code> from <code>N(μ, σ²)</code>.</li>
+								<li><strong>Decoder:</strong> <code>Linear(40→512) + ReLU → Linear(512→784) + Sigmoid</code>, reconstructing the original pixel values.</li>
+							</ul>
+							<p><strong>Loss function:</strong> Binary Cross-Entropy (reconstruction) + KL divergence (regularization). KL annealing is applied over the first 10 epochs — the KL term weight increases gradually from 0 to 1 — to prevent posterior collapse early in training.</p>
+							<p><strong>Optimizer:</strong> Adam with lr = 1e-3, paired with <code>CosineAnnealingLR</code> over 30 training epochs.</p>
+						</section>
+
+						<section id="generation" class="blog-section">
+							<h3>Generation &amp; Notebook</h3>
+							<p>Training loss converges steadily from <strong>0.2746 → 0.2628</strong> over 30 epochs. The trained model successfully reconstructs held-out MNIST digits and generates novel, coherent digit images by sampling random latent vectors from the prior <code>N(0, I)</code> and decoding them.</p>
+							<p>The structured latent space means that interpolating between two latent vectors produces smooth transitions between digits — a property unique to VAEs compared to standard autoencoders.</p>
+							<ul class="actions">
+								<li><a href="https://www.kaggle.com/code/gourabr0y555/vae-autoencoder" class="button primary icon solid fa-code" target="_blank">View Notebook Code</a></li>
+							</ul>
+						</section>
+
+						<hr />
+
+						<ul class="actions">
+							<li><a href="../index.html" class="button">← Return Home</a></li>
+						</ul>
+					</div>
+				</section>
+			</div>
+
+			<section id="footer">
+				<div class="container">
+					<ul class="copyright">
+						<li>&copy; Gourab Roy. All rights reserved.</li>
+					</ul>
+				</div>
+			</section>
+		</div>
+
+		<script src="../assets/js/jquery.min.js"></script>
+		<script src="../assets/js/jquery.scrollex.min.js"></script>
+		<script src="../assets/js/jquery.scrolly.min.js"></script>
+		<script src="../assets/js/browser.min.js"></script>
+		<script src="../assets/js/breakpoints.min.js"></script>
+		<script src="../assets/js/util.js"></script>
+		<script src="../assets/js/main.js"></script>
+		<script src="../assets/js/techguru.js"></script>
+
+	</body>
+</html>

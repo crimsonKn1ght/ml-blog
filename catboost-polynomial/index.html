@@ -1,0 +1,108 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<title>CatBoostClassifier on Polynomial Features — Gourab Roy</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="stylesheet" href="../assets/css/main.css" />
+		<link rel="stylesheet" href="../assets/css/techguru.css" />
+		<style>
+			section.blog-section {
+				min-height: 60vh;
+				padding-top: 2em;
+			}
+		</style>
+	</head>
+	<body class="is-preload">
+
+		<canvas id="particles-canvas"></canvas>
+
+		<section id="header">
+			<header>
+				<span class="image avatar"><img src="../images/avatar.jpg" alt="" /></span>
+				<h1 id="logo"><a href="../index.html"><span id="typed-name" data-text="Gourab Roy">Gourab Roy</span></a></h1>
+				<span class="role-badge">ML Engineer &amp; Researcher</span>
+				<p><span class="status-online"></span>AI/ML Enthusiast<br />
+				Deep Learning · LLMs · Computer Vision</p>
+			</header>
+			<nav id="nav">
+				<ul>
+					<li><a href="../index.html">← Home</a></li>
+					<li><a href="#intro" class="active">Introduction</a></li>
+					<li><a href="#features">Feature Engineering</a></li>
+					<li><a href="#results">Results &amp; Notebook</a></li>
+				</ul>
+			</nav>
+			<footer>
+				<ul class="icons">
+					<li><a href="#" class="icon brands fa-linkedin"><span class="label">LinkedIn</span></a></li>
+					<li><a href="#" class="icon brands fa-github"><span class="label">Github</span></a></li>
+					<li><a href="mailto:gouroy345@gmail.com" class="icon solid fa-envelope"><span class="label">Email</span></a></li>
+				</ul>
+			</footer>
+		</section>
+
+		<div id="wrapper">
+			<div id="main">
+				<section id="one">
+					<div class="container">
+						<header class="major">
+							<h2>CatBoostClassifier on Polynomial Features</h2>
+							<p>Feature engineering meets gradient boosting on the Palmer Penguins dataset</p>
+						</header>
+
+						<section id="intro" class="blog-section">
+							<h3>Introduction</h3>
+							<p>CatBoost is a gradient boosting library with a key strength: it natively handles categorical features without requiring manual encoding. Rather than forcing you to one-hot encode or label-encode categorical columns, CatBoost uses an internal ordered target statistics approach to deal with them directly during training.</p>
+							<p>Polynomial features expand the numeric input space by adding interaction terms and powers up to a specified degree. With <code>degree=2</code>, a feature <code>x</code> becomes <code>x, x²</code>, and pairs of features <code>x, y</code> gain an interaction term <code>x·y</code>. This gives the model richer signal without manual feature crafting — the algorithm can discover non-linear relationships that would otherwise be invisible to a linear boundary.</p>
+						</section>
+
+						<section id="features" class="blog-section">
+							<h3>Feature Engineering</h3>
+							<p>The pipeline is built to keep numeric and categorical columns on separate tracks, then merge them before handing off to CatBoost:</p>
+							<ul>
+								<li><strong>Numeric columns:</strong> median imputation for missing values, then <code>PolynomialFeatures(degree=2)</code> applied to expand the feature space.</li>
+								<li><strong>Categorical columns:</strong> most-frequent imputation only — no encoding needed, as CatBoost's <code>cat_features</code> parameter handles species and sex natively.</li>
+								<li>Both tracks are concatenated back into a single matrix before training.</li>
+							</ul>
+							<p>Model evaluation uses stratified 5-fold cross-validation to ensure each fold preserves the class distribution of the Palmer Penguins target (species: Adelie, Chinstrap, Gentoo).</p>
+						</section>
+
+						<section id="results" class="blog-section">
+							<h3>Results &amp; Notebook</h3>
+							<p>Cross-validation scores across 5 folds: <strong>0.9818, 0.9455, 0.9455, 1.0, 1.0</strong>. The model achieves a final held-out test accuracy of <strong>97.1%</strong> — a strong result given the compact dataset size (344 samples).</p>
+							<p>The combination of polynomial feature expansion and CatBoost's native categorical handling eliminates the usual preprocessing boilerplate while still extracting strong predictive signal.</p>
+							<ul class="actions">
+								<li><a href="https://www.kaggle.com/code/gourabr0y555/catboostclassifier-on-polynomial-features" class="button primary icon solid fa-code" target="_blank">View Notebook Code</a></li>
+							</ul>
+						</section>
+
+						<hr />
+
+						<ul class="actions">
+							<li><a href="../index.html" class="button">← Return Home</a></li>
+						</ul>
+					</div>
+				</section>
+			</div>
+
+			<section id="footer">
+				<div class="container">
+					<ul class="copyright">
+						<li>&copy; Gourab Roy. All rights reserved.</li>
+					</ul>
+				</div>
+			</section>
+		</div>
+
+		<script src="../assets/js/jquery.min.js"></script>
+		<script src="../assets/js/jquery.scrollex.min.js"></script>
+		<script src="../assets/js/jquery.scrolly.min.js"></script>
+		<script src="../assets/js/browser.min.js"></script>
+		<script src="../assets/js/breakpoints.min.js"></script>
+		<script src="../assets/js/util.js"></script>
+		<script src="../assets/js/main.js"></script>
+		<script src="../assets/js/techguru.js"></script>
+
+	</body>
+</html>
