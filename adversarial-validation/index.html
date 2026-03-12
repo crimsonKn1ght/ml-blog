@@ -54,7 +54,7 @@
 						<section id="intro" class="blog-section">
 							<h3>Introduction</h3>
 							<p>You train a model, it gets great cross-validation scores, but when you submit to the leaderboard or deploy it, performance collapses. This is often <strong>distribution drift</strong> — your training data doesn't look like your test data. Adversarial Validation is a technique to detect and quantify this problem before it costs you.</p>
-							<p>The notebook uses a synthetic dataset with a controlled shift: 2000 training samples and 800 test samples, each with 10 features — but <strong>3 of those features have been deliberately shifted</strong> in the test set (scaled by 2.5× and offset by +3.0). This mimics real-world scenarios like seasonal behaviour changes, data pipeline inconsistencies between collection periods, or population drift.</p>
+							<p>The notebook uses a synthetic dataset with a controlled shift: 2000 training samples and 800 test samples, each with 10 features. Three of those features are deliberately shifted in the test set (scaled by 2.5x and offset by +3.0), mimicking real-world problems like seasonal behaviour changes, pipeline inconsistencies between collection periods, or population drift.</p>
 						</section>
 
 						<section id="concept" class="blog-section">
@@ -73,7 +73,7 @@
 								<li><strong>0.75 – 0.90</strong> — significant shift, likely hurting generalisation.</li>
 								<li><strong>&gt; 0.90</strong> — severe shift, model will fail in production.</li>
 							</ul>
-							<p>The notebook benchmarks three classifiers side by side. GBM gives the strongest signal; Logistic Regression acts as a linear sanity check — a high AUC from logistic regression means the shift is linearly detectable, a particularly strong warning sign.</p>
+							<p>The notebook benchmarks three classifiers side by side. GBM gives the strongest signal. Logistic Regression acts as a linear sanity check: if it also scores high, the shift is linearly detectable, which is a particularly clear warning sign.</p>
 						</section>
 
 						<section id="mitigations" class="blog-section">

@@ -53,18 +53,18 @@
 
 						<section id="intro" class="blog-section">
 							<h3>Introduction</h3>
-							<p>K-Means is an unsupervised learning algorithm that partitions data into K clusters by minimizing within-cluster variance. Given a set of points, it finds K centroids such that each point belongs to the cluster with the nearest centroid — and the total squared distance from points to their centroids (inertia) is minimized.</p>
-							<p>This implementation builds K-Means entirely from scratch in pure NumPy — no scikit-learn clustering is used. The goal is to expose every moving part of the algorithm and understand exactly why it converges to its solution.</p>
+							<p>K-Means groups data into K clusters by repeatedly assigning each point to its nearest centroid, then recomputing centroids as cluster means. The objective is inertia: total squared distance from each point to its assigned centroid.</p>
+							<p>The implementation is pure NumPy. No scikit-learn clustering, no abstractions hiding the update steps. Writing it from scratch makes the convergence behavior concrete and easy to inspect.</p>
 						</section>
 
 						<section id="algorithm" class="blog-section">
 							<h3>The Algorithm</h3>
 							<p>K-Means alternates between two steps until convergence:</p>
 							<ul>
-								<li><strong>Assignment step:</strong> Each data point is assigned to the nearest centroid using Euclidean distance. This partitions all points into K groups.</li>
+								<li><strong>Assignment step:</strong> Each data point is assigned to the nearest centroid using Euclidean distance, partitioning all points into K groups.</li>
 								<li><strong>Update step:</strong> Each centroid is recomputed as the mean of all points currently assigned to it. Centroids shift to the center of their cluster.</li>
 							</ul>
-							<p>These two steps repeat until centroids stop moving — i.e., assignments no longer change between iterations. <strong>Inertia</strong> is calculated as the sum of squared distances from each point to its assigned centroid, and serves as the objective function being minimized.</p>
+							<p>These two steps repeat until assignments no longer change between iterations. <strong>Inertia</strong> is the sum of squared distances from each point to its centroid. Lower inertia means tighter clusters.</p>
 						</section>
 
 						<section id="elbow" class="blog-section">

@@ -53,8 +53,8 @@
 
 						<section id="intro" class="blog-section">
 							<h3>Introduction</h3>
-							<p>A standard autoencoder compresses an input into a fixed latent vector and then reconstructs it. The latent space, however, has no guaranteed structure — points in it may not correspond to meaningful or interpolatable representations.</p>
-							<p>A Variational Autoencoder (VAE) solves this by mapping inputs to a <em>distribution</em> over the latent space, parameterized by a mean vector μ and a log-variance vector log σ². At inference time, a latent vector is sampled from this distribution. The <strong>reparameterization trick</strong> — <code>z = μ + σ · ε</code> where <code>ε ~ N(0, I)</code> — makes this sampling step differentiable, allowing gradients to flow through the stochastic node during backpropagation.</p>
+							<p>A standard autoencoder maps an input to a fixed latent vector and reconstructs it. The problem is the latent space has no enforced structure. Two nearby latent vectors can decode to completely different outputs, which makes sampling or interpolation unreliable.</p>
+							<p>A VAE maps each input to a distribution over latent space, parameterized by a mean vector and a log-variance vector. Sampling from that distribution forces the model to learn a smooth, continuous latent space. The reparameterization trick keeps it differentiable: instead of sampling z directly, compute <code>z = μ + σ·ε</code> where <code>ε ~ N(0, I)</code>, so gradients flow through the stochastic step normally during backprop.</p>
 						</section>
 
 						<section id="architecture" class="blog-section">
@@ -65,14 +65,14 @@
 								<li><strong>Latent space:</strong> Dimension 40. The reparameterization trick samples <code>z</code> from <code>N(μ, σ²)</code>.</li>
 								<li><strong>Decoder:</strong> <code>Linear(40→512) + ReLU → Linear(512→784) + Sigmoid</code>, reconstructing the original pixel values.</li>
 							</ul>
-							<p><strong>Loss function:</strong> Binary Cross-Entropy (reconstruction) + KL divergence (regularization). KL annealing is applied over the first 10 epochs — the KL term weight increases gradually from 0 to 1 — to prevent posterior collapse early in training.</p>
+							<p><strong>Loss function:</strong> Binary Cross-Entropy (reconstruction) + KL divergence (regularization). KL annealing is applied over the first 10 epochs, increasing the KL term weight gradually from 0 to 1, to prevent posterior collapse early in training.</p>
 							<p><strong>Optimizer:</strong> Adam with lr = 1e-3, paired with <code>CosineAnnealingLR</code> over 30 training epochs.</p>
 						</section>
 
 						<section id="generation" class="blog-section">
 							<h3>Generation &amp; Notebook</h3>
 							<p>Training loss converges steadily from <strong>0.2746 → 0.2628</strong> over 30 epochs. The trained model successfully reconstructs held-out MNIST digits and generates novel, coherent digit images by sampling random latent vectors from the prior <code>N(0, I)</code> and decoding them.</p>
-							<p>The structured latent space means that interpolating between two latent vectors produces smooth transitions between digits — a property unique to VAEs compared to standard autoencoders.</p>
+							<p>The structured latent space lets you interpolate between two latent vectors and get smooth transitions between digits, something a regular autoencoder cannot reliably do.</p>
 							<ul class="actions">
 								<li><a href="https://www.kaggle.com/code/gourabr0y555/vae-autoencoder" class="button primary icon solid fa-code" target="_blank">View Notebook Code</a></li>
 							</ul>

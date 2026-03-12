@@ -53,8 +53,8 @@
 
 						<section id="intro" class="blog-section">
 							<h3>Introduction</h3>
-							<p>A Decision Tree is a supervised learning algorithm that recursively partitions the feature space using a sequence of binary splits. At each internal node, the algorithm selects the feature and threshold that best separates the classes in the current subset of data. This continues until a stopping condition is met, at which point a leaf node is created and assigned the majority class of its samples.</p>
-							<p>Unlike many black-box models, every prediction a Decision Tree makes follows a traceable, human-readable path of if-else rules. This implementation builds the tree entirely in pure NumPy — no scikit-learn for the tree logic itself.</p>
+							<p>A Decision Tree splits data recursively. At each node it picks the feature and threshold that best separates the classes among the current samples, then repeats on each resulting subset until a stopping condition is reached. Leaves vote by majority class.</p>
+							<p>Every prediction follows a traceable path through the tree you can read like a set of if-else rules, nothing hidden. The implementation is pure NumPy, no scikit-learn for the tree logic.</p>
 						</section>
 
 						<section id="howitworks" class="blog-section">
@@ -70,8 +70,8 @@
 
 						<section id="results" class="blog-section">
 							<h3>Results &amp; Notebook</h3>
-							<p>Tested on the Iris dataset (150 samples, 3 classes) with an 80/20 train-test split and <code>max_depth = 5</code>. The from-scratch implementation achieves <strong>100% test accuracy</strong> — matching what scikit-learn's DecisionTreeClassifier produces on the same split.</p>
-							<p>The Iris dataset is linearly separable in some projections, making it an ideal testbed for verifying that the splitting logic and Gini computation are correct before moving to harder problems.</p>
+							<p>Tested on the Iris dataset (150 samples, 3 classes) with an 80/20 split and <code>max_depth = 5</code>. The from-scratch tree hits <strong>100% test accuracy</strong>, matching scikit-learn's DecisionTreeClassifier on the same split.</p>
+							<p>Iris is a clean dataset to start with: separable enough that a correct implementation should get 100%, which makes it easy to spot logic errors in the Gini computation or split selection before testing on noisier data.</p>
 							<ul class="actions">
 								<li><a href="https://www.kaggle.com/code/gourabr0y555/decision-tree-classifier" class="button primary icon solid fa-code" target="_blank">View Notebook Code</a></li>
 							</ul>

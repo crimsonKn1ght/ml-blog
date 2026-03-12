@@ -53,19 +53,19 @@
 
 						<section id="intro" class="blog-section">
 							<h3>Introduction</h3>
-							<p>CatBoost is a gradient boosting library with a key strength: it natively handles categorical features without requiring manual encoding. Rather than forcing you to one-hot encode or label-encode categorical columns, CatBoost uses an internal ordered target statistics approach to deal with them directly during training.</p>
-							<p>Polynomial features expand the numeric input space by adding interaction terms and powers up to a specified degree. With <code>degree=2</code>, a feature <code>x</code> becomes <code>x, x²</code>, and pairs of features <code>x, y</code> gain an interaction term <code>x·y</code>. This gives the model richer signal without manual feature crafting — the algorithm can discover non-linear relationships that would otherwise be invisible to a linear boundary.</p>
+							<p>CatBoost handles categorical features natively during training, no preprocessing step needed. Pass the column indices via <code>cat_features</code> and it deals with encoding internally using ordered target statistics.</p>
+							<p>Polynomial features expand the numeric input space by adding interaction terms and powers. With <code>degree=2</code>, a feature <code>x</code> becomes <code>x</code> and <code>x²</code>, and two features <code>x, y</code> also get a cross term <code>x·y</code>. The model then picks up on relationships it would miss if only raw columns were passed in.</p>
 						</section>
 
 						<section id="features" class="blog-section">
 							<h3>Feature Engineering</h3>
-							<p>The pipeline is built to keep numeric and categorical columns on separate tracks, then merge them before handing off to CatBoost:</p>
+							<p>The pipeline keeps numeric and categorical columns on separate tracks, then recombines them before training:</p>
 							<ul>
-								<li><strong>Numeric columns:</strong> median imputation for missing values, then <code>PolynomialFeatures(degree=2)</code> applied to expand the feature space.</li>
-								<li><strong>Categorical columns:</strong> most-frequent imputation only — no encoding needed, as CatBoost's <code>cat_features</code> parameter handles species and sex natively.</li>
-								<li>Both tracks are concatenated back into a single matrix before training.</li>
+								<li><strong>Numeric columns:</strong> median imputation for missing values, then <code>PolynomialFeatures(degree=2)</code> to expand the feature space.</li>
+								<li><strong>Categorical columns:</strong> most-frequent imputation only. CatBoost's <code>cat_features</code> parameter handles species and sex natively, so no encoding is needed.</li>
+								<li>Both are concatenated into a single matrix before being passed to CatBoost.</li>
 							</ul>
-							<p>Model evaluation uses stratified 5-fold cross-validation to ensure each fold preserves the class distribution of the Palmer Penguins target (species: Adelie, Chinstrap, Gentoo).</p>
+							<p>Model evaluation uses stratified 5-fold cross-validation to preserve class distribution across folds (species: Adelie, Chinstrap, Gentoo).</p>
 						</section>
 
 						<section id="results" class="blog-section">
