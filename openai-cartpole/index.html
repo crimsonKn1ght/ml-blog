@@ -53,26 +53,27 @@
 
 						<section id="intro" class="blog-section">
 							<h3>Introduction</h3>
-							<p>CartPole-v1 is a classic reinforcement learning benchmark from OpenAI Gym. A cart sits on a frictionless track, with a pole balanced on top. At each timestep, the agent chooses to push the cart left or right. The environment rewards the agent with +1 for every timestep the pole stays upright. An episode ends when the pole tilts more than 15° from vertical, or when the cart moves outside the track bounds.</p>
+							<p>CartPole-v1 is a classic reinforcement learning benchmark from OpenAI Gym. A cart sits on a frictionless track, with a pole balanced on top. At each timestep, the agent chooses to push the cart left or right. The environment rewards the agent with +1 for every timestep the pole stays upright. An episode ends when the pole tilts more than 15 degrees from vertical, or when the cart moves outside the track bounds.</p>
 							<p>There are no instructions given upfront. The agent works out the control policy through trial and error, with the reward signal as its only feedback.</p>
+							<p>The state is 4-dimensional: cart position, cart velocity, pole angle, and pole angular velocity. The action space is just two discrete choices: push left or push right. Simple on paper, but the consequences of an action are delayed — whether you pushed left at step 10 matters for what happens at step 30, and the agent has to figure this out without being told.</p>
 						</section>
 
 						<section id="agent" class="blog-section">
 							<h3>The DQN Agent</h3>
-							<p>Deep Q-Networks extend classical Q-learning by approximating the Q-function with a neural network. The architecture used here:</p>
+							<p>Classical Q-learning maintains a table of Q(state, action) values representing expected future reward. DQN replaces this table with a neural network that generalizes across states, which is necessary when the state space is continuous as it is here.</p>
 							<ul>
 								<li><strong>Q-Network:</strong> <code>Linear(4→128) → ReLU → Linear(128→128) → ReLU → Linear(128→2)</code>. Input is the 4-dimensional state vector; output is Q-values for each of the 2 actions.</li>
-								<li><strong>Experience Replay:</strong> Transitions <code>(s, a, r, s')</code> are stored in a replay buffer (deque). Mini-batches are sampled randomly to break temporal correlation between updates.</li>
-								<li><strong>Online + Target Networks:</strong> Two identical networks are maintained. The online network is updated every step; the target network is synced periodically to stabilize training.</li>
-								<li><strong>Epsilon-Greedy Exploration:</strong> ε decays from 1.0 to 0.01 over training, shifting from pure exploration to exploitation as the agent learns.</li>
+								<li><strong>Experience Replay:</strong> Transitions <code>(s, a, r, s')</code> are stored in a replay buffer (deque, capacity 10000). Mini-batches of 64 are sampled randomly during each update to break temporal correlation. Without this, the network overfits to the most recent sequence of experience and forgets earlier lessons.</li>
+								<li><strong>Online + Target Networks:</strong> Two identical networks are maintained. The online network is updated every step; the target network is synced every 10 steps. If you used a single network for both the current Q-values and the Bellman target, the target shifts with every update and training oscillates.</li>
+								<li><strong>Epsilon-Greedy Exploration:</strong> ε decays from 1.0 to 0.01 over training, shifting from pure random exploration to exploitation of learned values.</li>
 							</ul>
-							<p>The Bellman target used for training: <code>r + γ · max Q(s', a')</code> with discount factor γ = 0.99.</p>
+							<p>The Bellman update target is <code>r + γ · max Q_target(s', a')</code> with discount factor γ = 0.99. The network minimizes MSE between its current Q-value prediction and this target. The 0.99 discount means a reward 100 steps away is still worth 0.99^100 ≈ 0.37 of its face value, so the agent genuinely cares about long-term outcomes.</p>
 						</section>
 
 						<section id="training" class="blog-section">
 							<h3>Training &amp; Notebook</h3>
-							<p>Training runs for 500 episodes. The rolling 100-episode average reward climbs from roughly 20 at the start to consistently above 200 by the end — surpassing the standard "solved" threshold of 195.</p>
-							<p>Greedy evaluation across 10 held-out test episodes yields a <strong>mean reward of 226.2</strong>, demonstrating that the agent has learned a robust balancing policy.</p>
+							<p>Training runs for 500 episodes. The first 50-100 episodes are almost entirely random exploration: episodes end in 10-20 steps. Around episodes 150-250 you see a rapid jump in performance as the policy starts converging. This is the characteristic learning cliff in DQN training, where enough good transitions have accumulated in the buffer for the network to start learning a reliable signal.</p>
+							<p>The rolling 100-episode average surpasses 195 (the standard "solved" threshold) by around episode 300 and stays there. Greedy evaluation across 10 test episodes yields a <strong>mean reward of 226.2</strong>. The maximum episode length in CartPole-v1 is 500, so the agent is not perfect but consistently recovers from the perturbations that would end a naive run early.</p>
 							<ul class="actions">
 								<li><a href="https://www.kaggle.com/code/gourabr0y555/openai-cartpole-problem" class="button primary icon solid fa-code" target="_blank">View Notebook Code</a></li>
 							</ul>

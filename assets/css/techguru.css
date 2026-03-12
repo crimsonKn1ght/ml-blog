@@ -421,6 +421,11 @@ ul.feature-icons li::before {
 .features {
   display: block !important;
   border-top: 1px solid rgba(255, 255, 255, 0.06);
+  max-height: 420px;
+  overflow-y: auto;
+  padding-right: 2px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 212, 255, 0.25) transparent;
 }
 
 .features article {

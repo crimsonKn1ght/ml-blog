@@ -55,12 +55,14 @@
 							<h3>What is a Time-Series RNN?</h3>
 							<p>Most ML models treat each row as independent. An RNN does not. It keeps a running hidden state that gets updated at each step, so earlier inputs carry forward and influence later outputs. That internal memory is what makes sequence modeling work.</p>
 							<p>For time-series data this is a natural fit. Yesterday's temperature carries information about tomorrow's. A sliding window of recent days feeds into the network step by step, and the hidden state accumulates context across the whole window before producing a prediction.</p>
+							<p>The vanilla RNN's memory has real limits though. As sequences grow longer, gradients shrink exponentially during backprop through time — the earliest timesteps stop contributing meaningfully. This is the vanishing gradient problem. LSTMs and GRUs address it using gating mechanisms that selectively retain or discard information across long distances. This project uses the basic RNN on purpose: the 7-day window is short enough that gradient flow stays reasonable, and stripping out the gating lets you see the core recurrent mechanics directly without extra complexity.</p>
 						</section>
 
 						<section id="project" class="blog-section">
 							<h3>About This Project</h3>
-							<p>The dataset is <strong>Daily Delhi Climate</strong>, covering daily weather over several years. The target is next-day mean temperature (<code>meantemp</code>). A sliding window of 7 days is built for each sample, so the model sees a week of readings before predicting the next.</p>
-							<p>The pipeline covers four steps: extracting temporal features from the date column, Min-Max normalizing all inputs, reshaping into sequential window blocks, then training a vanilla RNN on those sequences. No LSTM gating or attention, just the basic recurrent unit to keep the focus on the core mechanics.</p>
+							<p>The dataset is <strong>Daily Delhi Climate</strong>, covering several years of daily weather readings in Delhi. The target variable is <code>meantemp</code> — the mean temperature on the following day. A 7-day sliding window is built for each sample, so the model sees a week of readings before predicting the next.</p>
+							<p>Preprocessing covers four steps: temporal features are extracted from the date column (month and day-of-year, since climate has strong seasonality), all inputs are Min-Max scaled to [0, 1], data is reshaped into sequential blocks of shape <code>(samples, 7, features)</code>, and finally the RNN is trained on those sequences. Each sample is a 7-step sequence; the label is the <code>meantemp</code> on day 8.</p>
+							<p>The RNN uses a single hidden layer with 64 units, outputting a single scalar. Training uses MSE loss with Adam. Validation loss plateaus within roughly the first 20 epochs, which is typical for a short input sequence on a smooth climate signal. The main predictive signal is concentrated in the most recent few days, so the 7-day window already captures most of what is available. Adding more depth or a wider window does not meaningfully improve results on this dataset.</p>
 						</section>
 
 						<section id="code" class="blog-section">

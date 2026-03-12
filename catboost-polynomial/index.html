@@ -54,24 +54,26 @@
 						<section id="intro" class="blog-section">
 							<h3>Introduction</h3>
 							<p>CatBoost handles categorical features natively during training, no preprocessing step needed. Pass the column indices via <code>cat_features</code> and it deals with encoding internally using ordered target statistics.</p>
-							<p>Polynomial features expand the numeric input space by adding interaction terms and powers. With <code>degree=2</code>, a feature <code>x</code> becomes <code>x</code> and <code>x²</code>, and two features <code>x, y</code> also get a cross term <code>x·y</code>. The model then picks up on relationships it would miss if only raw columns were passed in.</p>
+							<p>The ordered statistics approach works roughly like this: for each categorical value, CatBoost estimates the target mean using only the rows that appeared before the current one in a shuffled order. This prevents target leakage that you would get from naive target encoding, where computing statistics over the whole dataset lets the model see future target values during training.</p>
+							<p>Polynomial features expand the numeric input space by adding interaction terms and powers. With <code>degree=2</code>, a feature <code>x</code> becomes <code>x</code> and <code>x²</code>, and two features <code>x, y</code> also get a cross term <code>x·y</code>. The model then picks up on relationships it would miss if only raw columns were passed in. For the three numeric columns in the Penguins dataset (bill_length_mm, bill_depth_mm, flipper_length_mm), degree=2 expansion produces 9 features total before the bias term, nearly tripling the numeric feature count.</p>
 						</section>
 
 						<section id="features" class="blog-section">
 							<h3>Feature Engineering</h3>
 							<p>The pipeline keeps numeric and categorical columns on separate tracks, then recombines them before training:</p>
 							<ul>
-								<li><strong>Numeric columns:</strong> median imputation for missing values, then <code>PolynomialFeatures(degree=2)</code> to expand the feature space.</li>
-								<li><strong>Categorical columns:</strong> most-frequent imputation only. CatBoost's <code>cat_features</code> parameter handles species and sex natively, so no encoding is needed.</li>
-								<li>Both are concatenated into a single matrix before being passed to CatBoost.</li>
+								<li><strong>Numeric columns:</strong> median imputation for missing values (the Penguins dataset has a handful of NaN rows), then <code>PolynomialFeatures(degree=2, include_bias=False)</code> to expand the feature space.</li>
+								<li><strong>Categorical columns:</strong> most-frequent imputation only. CatBoost's <code>cat_features</code> parameter handles species and sex natively, so no one-hot encoding or label encoding is needed.</li>
+								<li>Both tracks are concatenated into a single matrix, with the numeric polynomial columns first and the categorical columns appended at the end.</li>
 							</ul>
-							<p>Model evaluation uses stratified 5-fold cross-validation to preserve class distribution across folds (species: Adelie, Chinstrap, Gentoo).</p>
+							<p>Model evaluation uses stratified 5-fold cross-validation to preserve class distribution across folds. Stratification matters here because the three species have unequal sample counts: Adelie has 152 samples, Gentoo 124, and Chinstrap only 68. A random split could create folds that underrepresent Chinstrap and produce overly optimistic scores on the majority classes.</p>
 						</section>
 
 						<section id="results" class="blog-section">
 							<h3>Results &amp; Notebook</h3>
-							<p>Cross-validation scores across 5 folds: <strong>0.9818, 0.9455, 0.9455, 1.0, 1.0</strong>. The model achieves a final held-out test accuracy of <strong>97.1%</strong> — a strong result given the compact dataset size (344 samples).</p>
-							<p>The combination of polynomial feature expansion and CatBoost's native categorical handling eliminates the usual preprocessing boilerplate while still extracting strong predictive signal.</p>
+							<p>Cross-validation scores across 5 folds: <strong>0.9818, 0.9455, 0.9455, 1.0, 1.0</strong>. Final held-out test accuracy: <strong>97.1%</strong> on 69 test samples.</p>
+							<p>The two folds that scored below 0.97 likely reflect the trickier boundary cases between Adelie and Chinstrap, which overlap more in bill dimensions than either does with Gentoo. The polynomial cross terms (bill_length x bill_depth in particular) help define this boundary. Running CatBoost on the raw numeric features without polynomial expansion drops mean CV accuracy by a few points, confirming the expansion is doing real work.</p>
+							<p>97.1% on 344 samples is solid. The Penguins dataset is relatively clean and separable by bill morphology, but 344 samples is small enough that every percentage point has noise. The CV consistency (four of five folds above 0.94) is more informative than the single test number.</p>
 							<ul class="actions">
 								<li><a href="https://www.kaggle.com/code/gourabr0y555/catboostclassifier-on-polynomial-features" class="button primary icon solid fa-code" target="_blank">View Notebook Code</a></li>
 							</ul>

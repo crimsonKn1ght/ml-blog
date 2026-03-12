@@ -53,26 +53,28 @@
 
 						<section id="intro" class="blog-section">
 							<h3>Introduction</h3>
-							<p>A standard autoencoder maps an input to a fixed latent vector and reconstructs it. The problem is the latent space has no enforced structure. Two nearby latent vectors can decode to completely different outputs, which makes sampling or interpolation unreliable.</p>
+							<p>A standard autoencoder maps an input to a fixed latent vector and reconstructs it. The problem is the latent space has no enforced structure. Two nearby latent vectors can decode to completely different outputs, which makes sampling or interpolation unreliable. You can verify this yourself: take a trained autoencoder, sample a random latent vector, and decode it. Most of the time you get noise, not a digit.</p>
 							<p>A VAE maps each input to a distribution over latent space, parameterized by a mean vector and a log-variance vector. Sampling from that distribution forces the model to learn a smooth, continuous latent space. The reparameterization trick keeps it differentiable: instead of sampling z directly, compute <code>z = μ + σ·ε</code> where <code>ε ~ N(0, I)</code>, so gradients flow through the stochastic step normally during backprop.</p>
+							<p>The regularization comes from the KL divergence term in the loss, which penalizes the encoder for producing distributions that deviate from a standard normal. This is what forces structure into the space. Without it, the encoder can set σ to near zero and collapse to a deterministic autoencoder, using the mean as a fixed code with no stochasticity and no continuous structure.</p>
 						</section>
 
 						<section id="architecture" class="blog-section">
 							<h3>Architecture &amp; Training</h3>
 							<p>The model operates on flattened 28×28 MNIST images (784 dimensions):</p>
 							<ul>
-								<li><strong>Encoder:</strong> <code>Linear(784→512) + ReLU</code>, then two parallel heads: <code>fc_mu</code> and <code>fc_logvar</code>, each outputting a 40-dimensional vector.</li>
-								<li><strong>Latent space:</strong> Dimension 40. The reparameterization trick samples <code>z</code> from <code>N(μ, σ²)</code>.</li>
-								<li><strong>Decoder:</strong> <code>Linear(40→512) + ReLU → Linear(512→784) + Sigmoid</code>, reconstructing the original pixel values.</li>
+								<li><strong>Encoder:</strong> <code>Linear(784→512) + ReLU</code>, then two parallel output heads: <code>fc_mu</code> and <code>fc_logvar</code>, each outputting a 40-dimensional vector. Log-variance is used instead of variance directly because it can be any real number, which makes it easier for the network to learn.</li>
+								<li><strong>Latent space:</strong> Dimension 40. The reparameterization trick samples <code>z = μ + exp(0.5·log_var)·ε</code> from the encoded distribution.</li>
+								<li><strong>Decoder:</strong> <code>Linear(40→512) + ReLU → Linear(512→784) + Sigmoid</code>, reconstructing pixel values in [0, 1].</li>
 							</ul>
-							<p><strong>Loss function:</strong> Binary Cross-Entropy (reconstruction) + KL divergence (regularization). KL annealing is applied over the first 10 epochs, increasing the KL term weight gradually from 0 to 1, to prevent posterior collapse early in training.</p>
-							<p><strong>Optimizer:</strong> Adam with lr = 1e-3, paired with <code>CosineAnnealingLR</code> over 30 training epochs.</p>
+							<p><strong>Loss function:</strong> Binary Cross-Entropy for reconstruction, plus KL divergence for regularization. The KL term has a closed-form expression for Gaussian distributions: <code>-0.5 * sum(1 + log_var - mu² - exp(log_var))</code>, so no sampling is needed to compute it.</p>
+							<p>KL annealing is applied over the first 10 epochs, increasing the KL weight gradually from 0 to 1. Without annealing, the KL term can dominate early in training and push the encoder to collapse to the prior before it has learned anything useful. Annealing gives the reconstruction loss time to establish a meaningful encoding first.</p>
+							<p><strong>Optimizer:</strong> Adam with lr = 1e-3, paired with <code>CosineAnnealingLR</code> over 30 training epochs to reduce the learning rate smoothly.</p>
 						</section>
 
 						<section id="generation" class="blog-section">
 							<h3>Generation &amp; Notebook</h3>
-							<p>Training loss converges steadily from <strong>0.2746 → 0.2628</strong> over 30 epochs. The trained model successfully reconstructs held-out MNIST digits and generates novel, coherent digit images by sampling random latent vectors from the prior <code>N(0, I)</code> and decoding them.</p>
-							<p>The structured latent space lets you interpolate between two latent vectors and get smooth transitions between digits, something a regular autoencoder cannot reliably do.</p>
+							<p>Training loss converges from <strong>0.2746 down to 0.2628</strong> over 30 epochs. The model reconstructs held-out MNIST digits clearly and generates novel digit images by sampling random latent vectors from <code>N(0, I)</code> and decoding them. The samples are recognizable as digits rather than noise, which confirms the latent space is well-structured.</p>
+							<p>The structured latent space lets you interpolate between two latent vectors and get smooth transitions between digits, something a regular autoencoder cannot reliably do. For example, interpolating linearly between the latent code for a 3 and the code for an 8 produces intermediate images that look like plausible but ambiguous digits. This is the direct result of the KL regularization filling in the gaps between training examples with a coherent, navigable space.</p>
 							<ul class="actions">
 								<li><a href="https://www.kaggle.com/code/gourabr0y555/vae-autoencoder" class="button primary icon solid fa-code" target="_blank">View Notebook Code</a></li>
 							</ul>

@@ -53,8 +53,9 @@
 
 						<section id="intro" class="blog-section">
 							<h3>Introduction</h3>
-							<p>K-Means groups data into K clusters by repeatedly assigning each point to its nearest centroid, then recomputing centroids as cluster means. The objective is inertia: total squared distance from each point to its assigned centroid.</p>
+							<p>K-Means groups data into K clusters by repeatedly assigning each point to its nearest centroid, then recomputing centroids as cluster means. The objective is inertia: total squared distance from each point to its assigned centroid. Minimizing inertia means making clusters as tight as possible.</p>
 							<p>The implementation is pure NumPy. No scikit-learn clustering, no abstractions hiding the update steps. Writing it from scratch makes the convergence behavior concrete and easy to inspect.</p>
+							<p>One thing worth knowing upfront: K-Means converges, but only to a local minimum of the inertia objective. Different random initializations of the starting centroids can produce quite different final solutions. A production implementation runs the algorithm several times and keeps the best result. The classical improvement is K-Means++ initialization, which spreads the starting centroids out across the data rather than placing them randomly, and significantly reduces the chance of landing in a poor local minimum.</p>
 						</section>
 
 						<section id="algorithm" class="blog-section">
@@ -65,12 +66,14 @@
 								<li><strong>Update step:</strong> Each centroid is recomputed as the mean of all points currently assigned to it. Centroids shift to the center of their cluster.</li>
 							</ul>
 							<p>These two steps repeat until assignments no longer change between iterations. <strong>Inertia</strong> is the sum of squared distances from each point to its centroid. Lower inertia means tighter clusters.</p>
+							<p>Each iteration strictly decreases (or maintains) inertia. The update step moves each centroid to the optimal position given current assignments, and the assignment step picks the nearest centroid, so inertia can never increase. This guarantees termination in a finite number of steps, since there are finitely many ways to partition N points into K groups. In practice convergence is fast, typically under 20-30 iterations on well-separated data.</p>
 						</section>
 
 						<section id="elbow" class="blog-section">
 							<h3>Elbow Method &amp; Notebook</h3>
-							<p>To find the optimal number of clusters, the algorithm is run for K = 1 through 9 and inertia is recorded at each step. Plotting inertia vs. K reveals a curve that bends sharply at the optimal K — this bend is the "elbow."</p>
-							<p>For this dataset, the elbow is clearly visible at <strong>K = 4</strong>, indicating four natural groupings in the data. Beyond K = 4, additional clusters provide diminishing returns in reducing inertia.</p>
+							<p>To find the optimal number of clusters, the algorithm is run for K = 1 through 9 and inertia is recorded at each step. Plotting inertia vs. K produces a curve that drops steeply at first, then flattens. The bend where the rate of decrease slows sharply is called the elbow, and it marks where adding more clusters stops being worth it.</p>
+							<p>For this dataset, the elbow is clearly visible at <strong>K = 4</strong>. Beyond K = 4, each additional cluster only shaves off a small amount of inertia because there are no natural fifth groupings left to split — the four clusters already capture the main structure in the data.</p>
+							<p>The elbow method is a heuristic, not a proof. It works well when clusters are well-separated and roughly equal in size. If clusters have very different densities or sizes, the elbow can be ambiguous or absent entirely. In those cases, the Silhouette score gives a cleaner signal by measuring both within-cluster cohesion and between-cluster separation simultaneously.</p>
 							<ul class="actions">
 								<li><a href="https://www.kaggle.com/code/gourabr0y555/k-means-clustering-with-inertia-measurement" class="button primary icon solid fa-code" target="_blank">View Notebook Code</a></li>
 							</ul>

@@ -53,8 +53,9 @@
 
 						<section id="intro" class="blog-section">
 							<h3>Introduction</h3>
-							<p>You train a model, it gets great cross-validation scores, but when you submit to the leaderboard or deploy it, performance collapses. This is often <strong>distribution drift</strong> — your training data doesn't look like your test data. Adversarial Validation is a technique to detect and quantify this problem before it costs you.</p>
+							<p>You train a model, it gets great cross-validation scores, but when you submit to the leaderboard or deploy it, performance collapses. This is often <strong>distribution drift</strong>: your training data does not look like your test data. Adversarial Validation is a technique to detect and quantify this problem before it costs you.</p>
 							<p>The notebook uses a synthetic dataset with a controlled shift: 2000 training samples and 800 test samples, each with 10 features. Three of those features are deliberately shifted in the test set (scaled by 2.5x and offset by +3.0), mimicking real-world problems like seasonal behaviour changes, pipeline inconsistencies between collection periods, or population drift.</p>
+							<p>A few concrete examples where this comes up: a model trained on 2020-2022 data deployed on 2024 data where customer demographics have shifted; a model trained at hospital A deployed at hospital B with different equipment calibration; or a model where a new feature gets populated differently for historical versus live records because the data engineering team changed something quietly.</p>
 						</section>
 
 						<section id="concept" class="blog-section">
@@ -66,24 +67,26 @@
 								<li>Train a binary classifier (GBM, Random Forest, or Logistic Regression) to predict this label.</li>
 								<li>Evaluate using <strong>stratified cross-validated AUC</strong>.</li>
 							</ol>
+							<p>The AUC baseline of 0.5 is meaningful. A classifier that cannot distinguish train from test performs no better than random guessing, giving exactly 0.5. Anything above that means the classifier found a tell — some pattern that separates the two sets. The higher the AUC, the stronger and more consistent the shift.</p>
 							<p><strong>Interpreting the AUC:</strong></p>
 							<ul>
-								<li><strong>≈ 0.50</strong> — no detectable shift, you're safe.</li>
-								<li><strong>0.60 – 0.75</strong> — mild shift, worth investigating feature importances.</li>
-								<li><strong>0.75 – 0.90</strong> — significant shift, likely hurting generalisation.</li>
-								<li><strong>&gt; 0.90</strong> — severe shift, model will fail in production.</li>
+								<li><strong>≈ 0.50:</strong> no detectable shift, you are safe.</li>
+								<li><strong>0.60 – 0.75:</strong> mild shift, worth inspecting feature importances.</li>
+								<li><strong>0.75 – 0.90:</strong> significant shift, likely hurting generalisation.</li>
+								<li><strong>&gt; 0.90:</strong> severe shift, model will likely fail in production.</li>
 							</ul>
-							<p>The notebook benchmarks three classifiers side by side. GBM gives the strongest signal. Logistic Regression acts as a linear sanity check: if it also scores high, the shift is linearly detectable, which is a particularly clear warning sign.</p>
+							<p>The notebook benchmarks three classifiers side by side. GBM gives the strongest signal because it captures non-linear feature interactions. Logistic Regression acts as a linear sanity check: if it also scores high, the shift is linearly detectable from individual feature statistics alone, which is a particularly clear warning sign and easier to diagnose.</p>
 						</section>
 
 						<section id="mitigations" class="blog-section">
 							<h3>Diagnosis &amp; Notebook</h3>
-							<p>Once a high AUC confirms drift, the adversarial classifier's <strong>feature importances</strong> directly identify which features are responsible. In the notebook the top-3 importances exactly match the ground-truth shifted features. A no-shift sanity check confirms the method is well-calibrated: when train and test are drawn from identical distributions, the adversarial AUC returns ≈ 0.5 as expected.</p>
+							<p>Once a high AUC confirms drift, the adversarial classifier's <strong>feature importances</strong> directly identify which features are responsible. Features that are most useful for telling train from test apart are the most shifted ones. In the notebook the top-3 importances exactly match the three ground-truth shifted features. A no-shift sanity check confirms the method is well-calibrated: when train and test are drawn from identical distributions, the adversarial AUC returns near 0.5 as expected.</p>
 							<p>Two mitigation strategies are implemented:</p>
 							<ul>
-								<li><strong>Drop shifted features</strong> — remove any feature whose adversarial importance exceeds 10%. After dropping, re-running adversarial validation confirms the AUC falls back toward 0.5.</li>
-								<li><strong>Sample reweighting</strong> — compute density ratio weights <code>w(x) ∝ P(test) / P(train)</code> using the adversarial classifier's predicted probabilities. Training samples that look like the test set receive higher weight. Extreme weights are clipped to prevent training instability.</li>
+								<li><strong>Drop shifted features:</strong> remove any feature whose adversarial importance exceeds a threshold (default 10%). After dropping, re-running adversarial validation confirms the AUC falls back toward 0.5. This works well when the shifted feature carries little signal for the actual target. If it is also an important predictor, dropping it is costly.</li>
+								<li><strong>Sample reweighting:</strong> compute density ratio weights <code>w(x) ∝ P(test) / P(train)</code> using the adversarial classifier's predicted probabilities. Training samples that look like the test set receive higher weight, so the downstream model pays more attention to them. Extreme weights are clipped at the 99th percentile to prevent instability.</li>
 							</ul>
+							<p>In practice, the right choice depends on the feature's role. Check both its adversarial importance (how much it causes shift) and its importance in a baseline model trained on the original target (how much it drives predictions). High adversarial and low target importance: drop it. High adversarial and high target importance: reweight instead.</p>
 							<ul class="actions">
 								<li><a href="https://www.kaggle.com/code/gourabr0y555/adversarial-validation/" class="button primary icon solid fa-code" target="_blank">View Notebook Code</a></li>
 							</ul>

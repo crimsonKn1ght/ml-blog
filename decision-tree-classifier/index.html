@@ -55,23 +55,26 @@
 							<h3>Introduction</h3>
 							<p>A Decision Tree splits data recursively. At each node it picks the feature and threshold that best separates the classes among the current samples, then repeats on each resulting subset until a stopping condition is reached. Leaves vote by majority class.</p>
 							<p>Every prediction follows a traceable path through the tree you can read like a set of if-else rules, nothing hidden. The implementation is pure NumPy, no scikit-learn for the tree logic.</p>
+							<p>One useful property of decision trees is that the algorithm is fully deterministic given the training data. No random initialization, no gradient descent, no convergence questions. Run it twice on the same data and you get the same tree. The only design choices are the splitting criterion, depth limit, and minimum samples to split a node. Everything else follows from those.</p>
 						</section>
 
 						<section id="howitworks" class="blog-section">
 							<h3>How It Works</h3>
 							<p>The core of the algorithm is the split selection criterion:</p>
 							<ul>
-								<li><strong>Gini Impurity:</strong> Measures how often a randomly chosen element from the node would be incorrectly classified. Computed as <code>1 − Σ(pᵢ²)</code>, where pᵢ is the proportion of class i in the node. A pure node (all one class) has Gini = 0.</li>
-								<li><strong>Best split search:</strong> For each feature, every unique value is considered as a candidate threshold. The split is evaluated by computing the weighted Gini impurity of the two resulting child nodes. The feature-threshold pair with the lowest weighted Gini is selected.</li>
-								<li><strong>Stopping conditions:</strong> Recursion halts when the maximum depth is reached, the node is already pure, or the number of samples falls below <code>min_samples_split</code>.</li>
-								<li><strong>Leaf assignment:</strong> Each leaf assigns the majority class among its samples via a simple vote.</li>
+								<li><strong>Gini Impurity:</strong> Measures class mixing at a node. Computed as <code>1 − Σ(pᵢ²)</code>, where pᵢ is the proportion of class i. A pure node has Gini = 0; a maximally mixed two-class node has Gini = 0.5. Gini is cheaper to compute than entropy (which uses logarithms) and produces very similar splits in practice.</li>
+								<li><strong>Best split search:</strong> For each feature, every unique value is considered as a candidate threshold. Each candidate is scored by computing the weighted Gini of the two resulting child nodes: <code>(n_left/n) * gini_left + (n_right/n) * gini_right</code>. The feature-threshold pair with the lowest weighted Gini is selected.</li>
+								<li><strong>Stopping conditions:</strong> Recursion halts when the maximum depth is reached, the node is already pure (Gini = 0), or the number of samples falls below <code>min_samples_split</code>.</li>
+								<li><strong>Leaf assignment:</strong> Each leaf stores the majority class among its training samples and outputs that class for any test point that reaches it.</li>
 							</ul>
+							<p>The brute-force search over all features and thresholds is O(n * d) per node where d is the number of features and n is the samples at that node. For small datasets like Iris this is instant. For larger datasets with many unique feature values, you would typically sort each feature column once and scan thresholds in order, or use approximate histogram-based methods.</p>
 						</section>
 
 						<section id="results" class="blog-section">
 							<h3>Results &amp; Notebook</h3>
 							<p>Tested on the Iris dataset (150 samples, 3 classes) with an 80/20 split and <code>max_depth = 5</code>. The from-scratch tree hits <strong>100% test accuracy</strong>, matching scikit-learn's DecisionTreeClassifier on the same split.</p>
-							<p>Iris is a clean dataset to start with: separable enough that a correct implementation should get 100%, which makes it easy to spot logic errors in the Gini computation or split selection before testing on noisier data.</p>
+							<p>Iris is a clean starting point: the classes are separable enough that a correct implementation should hit 100%, making it easy to catch logic errors in the Gini computation or split search. A mistake in the weighted Gini formula, for instance, typically produces splits that look reasonable but miss the true optimum, causing a few misclassifications you can directly inspect.</p>
+							<p>Setting <code>max_depth = 5</code> gives more capacity than Iris actually needs. In practice the tree stops growing at depth 3 because all leaves are pure by then. Increasing max_depth further has no effect on this dataset. The interesting experiment is reducing it: at <code>max_depth = 2</code> you can still achieve 96-97% accuracy, which shows how much structure Iris has along just two or three decision boundaries.</p>
 							<ul class="actions">
 								<li><a href="https://www.kaggle.com/code/gourabr0y555/decision-tree-classifier" class="button primary icon solid fa-code" target="_blank">View Notebook Code</a></li>
 							</ul>
