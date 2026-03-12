@@ -30,14 +30,14 @@
 					<li><a href="../index.html">← Home</a></li>
 					<li><a href="#intro" class="active">Introduction</a></li>
 					<li><a href="#concept">The Concept</a></li>
-					<li><a href="#implementation">Implementation</a></li>
+					<li><a href="#mitigations">Diagnosis &amp; Notebook</a></li>
 				</ul>
 			</nav>
 			<footer>
 				<ul class="icons">
-					<li><a href="#" class="icon brands fa-linkedin"><span class="label">LinkedIn</span></a></li>
-					<li><a href="#" class="icon brands fa-github"><span class="label">Github</span></a></li>
-					<li><a href="mailto:gouroy345@gmail.com" class="icon solid fa-envelope"><span class="label">Email</span></a></li>
+					<li><a href="https://www.kaggle.com/gourabr0y555/" class="icon brands fa-kaggle"><span class="label">Kaggle</span></a></li>
+					<li><a href="https://github.com/crimsonKn1ght/" class="icon brands fa-github"><span class="label">Github</span></a></li>
+					<li><a href="mailto:gourab.roy.aiml@gmail.com" class="icon solid fa-envelope"><span class="label">Email</span></a></li>
 				</ul>
 			</footer>
 		</section>
@@ -48,37 +48,44 @@
 					<div class="container">
 						<header class="major">
 							<h2>Adversarial Validation</h2>
-							<p>Detecting distribution drift between your training and test data.</p>
+							<p>Detecting distribution drift between your training and test data</p>
 						</header>
 
 						<section id="intro" class="blog-section">
 							<h3>Introduction</h3>
-							<p>You train a model, it gets amazing cross-validation scores, but when you submit it to the leaderboard or deploy it, it fails miserably. Sound familiar? This is often due to <strong>distribution drift</strong> — your training data doesn't look like your test data.</p>
-							<p>Adversarial Validation is a clever technique to detect this problem before you waste hours tuning hyperparameters on a biased dataset.</p>
+							<p>You train a model, it gets great cross-validation scores, but when you submit to the leaderboard or deploy it, performance collapses. This is often <strong>distribution drift</strong> — your training data doesn't look like your test data. Adversarial Validation is a technique to detect and quantify this problem before it costs you.</p>
+							<p>The notebook uses a synthetic dataset with a controlled shift: 2000 training samples and 800 test samples, each with 10 features — but <strong>3 of those features have been deliberately shifted</strong> in the test set (scaled by 2.5× and offset by +3.0). This mimics real-world scenarios like seasonal behaviour changes, data pipeline inconsistencies between collection periods, or population drift.</p>
 						</section>
 
 						<section id="concept" class="blog-section">
 							<h3>The Concept</h3>
-							<p>The idea is simple: If your training and test sets come from the same distribution, they should be indistinguishable.</p>
-							<p>To test this, we intentionally try to break it:</p>
-							<ol style="list-style:decimal;padding-left:1.5em;color:var(--text-secondary);line-height:1.9;">
-								<li style="padding-left:0.25em;margin-bottom:0.5em;">Combine your Train and Test datasets.</li>
-								<li style="padding-left:0.25em;margin-bottom:0.5em;">Create a new target label: <code>0</code> for Training rows, <code>1</code> for Test rows.</li>
-								<li style="padding-left:0.25em;margin-bottom:0.5em;">Train a classifier (like a Random Forest or LGBM) to predict this label.</li>
+							<p>The core idea: if train and test come from the same distribution, a classifier should not be able to tell them apart. To test this:</p>
+							<ol>
+								<li>Label all training rows as <code>0</code> and all test rows as <code>1</code>.</li>
+								<li>Concatenate them into a single combined dataset.</li>
+								<li>Train a binary classifier (GBM, Random Forest, or Logistic Regression) to predict this label.</li>
+								<li>Evaluate using <strong>stratified cross-validated AUC</strong>.</li>
 							</ol>
-							<p><strong>The Result:</strong> If this classifier yields an AUC of ~0.5, you are safe — the data is indistinguishable. However, if the AUC is high (e.g., 0.8 or 0.9), the model can easily tell the difference. This means your training data is fundamentally different from your test data, and any model trained on it will likely overfit to the past.</p>
+							<p><strong>Interpreting the AUC:</strong></p>
+							<ul>
+								<li><strong>≈ 0.50</strong> — no detectable shift, you're safe.</li>
+								<li><strong>0.60 – 0.75</strong> — mild shift, worth investigating feature importances.</li>
+								<li><strong>0.75 – 0.90</strong> — significant shift, likely hurting generalisation.</li>
+								<li><strong>&gt; 0.90</strong> — severe shift, model will fail in production.</li>
+							</ul>
+							<p>The notebook benchmarks three classifiers side by side. GBM gives the strongest signal; Logistic Regression acts as a linear sanity check — a high AUC from logistic regression means the shift is linearly detectable, a particularly strong warning sign.</p>
 						</section>
 
-						<section id="implementation" class="blog-section">
-							<h3>Implementation &amp; Fixes</h3>
-							<p>Once you know you have a problem, you can use the Adversarial Validator to fix it:</p>
+						<section id="mitigations" class="blog-section">
+							<h3>Diagnosis &amp; Notebook</h3>
+							<p>Once a high AUC confirms drift, the adversarial classifier's <strong>feature importances</strong> directly identify which features are responsible. In the notebook the top-3 importances exactly match the ground-truth shifted features. A no-shift sanity check confirms the method is well-calibrated: when train and test are drawn from identical distributions, the adversarial AUC returns ≈ 0.5 as expected.</p>
+							<p>Two mitigation strategies are implemented:</p>
 							<ul>
-								<li><strong>Feature Selection:</strong> Check feature importance in the adversarial model. If one feature is the primary culprit (e.g., a shifting ID or timestamp), drop it.</li>
-								<li><strong>Sample Weighting:</strong> Drop the training samples that the model says look "least like the test set."</li>
+								<li><strong>Drop shifted features</strong> — remove any feature whose adversarial importance exceeds 10%. After dropping, re-running adversarial validation confirms the AUC falls back toward 0.5.</li>
+								<li><strong>Sample reweighting</strong> — compute density ratio weights <code>w(x) ∝ P(test) / P(train)</code> using the adversarial classifier's predicted probabilities. Training samples that look like the test set receive higher weight. Extreme weights are clipped to prevent training instability.</li>
 							</ul>
-							<p>I often use this in time-series competitions to align my local validation strategy with the public leaderboard.</p>
 							<ul class="actions">
-								<li><a href="#" class="button primary icon solid fa-code">View Python Snippet</a></li>
+								<li><a href="https://www.kaggle.com/code/gourabr0y555/adversarial-validation/" class="button primary icon solid fa-code" target="_blank">View Notebook Code</a></li>
 							</ul>
 						</section>
 
