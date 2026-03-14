@@ -1,0 +1,114 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<title>PCA from Scratch</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="stylesheet" href="../assets/css/main.css" />
+		<link rel="stylesheet" href="../assets/css/techguru.css" />
+		<style>
+			section.blog-section {
+				min-height: 60vh;
+				padding-top: 2em;
+			}
+		</style>
+	</head>
+	<body class="is-preload">
+
+		<canvas id="particles-canvas"></canvas>
+
+		<section id="header">
+			<header>
+				<span class="image avatar"><img src="../images/avatar.jpg" alt="" /></span>
+				<h1 id="logo"><a href="../index.html"><span id="typed-name" data-text="Gourab Roy">Gourab Roy</span></a></h1>
+				<span class="role-badge">ML Engineer &amp; Researcher</span>
+				<p><span class="status-online"></span>Data Scientist<br />
+				Deep Learning · LLMs · Computer Vision</p>
+			</header>
+			<nav id="nav">
+				<ul>
+					<li><a href="../index.html">← Home</a></li>
+					<li><a href="#intro" class="active">Introduction</a></li>
+					<li><a href="#math">The Math &amp; Implementation</a></li>
+					<li><a href="#results">Results &amp; Notebook</a></li>
+				</ul>
+			</nav>
+			<footer>
+				<ul class="icons">
+					<li><a href="https://www.kaggle.com/gourabr0y555/" class="icon brands fa-kaggle"><span class="label">Kaggle</span></a></li>
+					<li><a href="https://github.com/crimsonKn1ght/" class="icon brands fa-github"><span class="label">Github</span></a></li>
+					<li><a href="mailto:gourab.roy.aiml@gmail.com" class="icon solid fa-envelope"><span class="label">Email</span></a></li>
+				</ul>
+			</footer>
+		</section>
+
+		<div id="wrapper">
+			<div id="main">
+				<section id="one">
+					<div class="container">
+						<header class="major">
+							<h2>PCA from Scratch</h2>
+							<p>Dimensionality reduction via SVD in pure NumPy, validated against scikit-learn</p>
+						</header>
+
+						<section id="intro" class="blog-section">
+							<h3>Introduction</h3>
+							<p>Most datasets have more features than they need. Some features are correlated, some are near-linear combinations of others, and some are just noise. PCA (Principal Component Analysis) finds a new coordinate system where the axes — called principal components — are ordered by how much variance they capture. Projecting data onto the top k components gives you the most information possible in k dimensions.</p>
+							<p>The notebook implements PCA from scratch using only NumPy, then validates numerically against scikit-learn. The dataset is synthetic: 500 samples, 10 features, 5 of which are informative, 3 are redundant linear combinations, and 2 are pure noise. PCA's job is to find the informative directions and deprioritise the rest.</p>
+							<p>One thing that catches people off guard: you must standardize the data before running PCA. Without it, features with larger numeric scales dominate the principal components regardless of their actual information content. A feature measured in thousands of dollars will dwarf one measured in single-digit probabilities, even if the probability feature is far more predictive. Standardizing to zero mean and unit variance per feature puts everyone on equal footing before the decomposition runs.</p>
+						</section>
+
+						<section id="math" class="blog-section">
+							<h3>The Math &amp; Implementation</h3>
+							<p>PCA is a six-step process:</p>
+							<ul>
+								<li><strong>Center:</strong> Subtract the column means so the data cloud sits at the origin: <code>X_c = X - mean(X)</code>.</li>
+								<li><strong>Covariance matrix:</strong> Compute <code>C = X_c^T X_c / (n-1)</code>. Each entry C[i,j] is the covariance between feature i and feature j. High off-diagonal values mean those features are correlated and PCA will collapse them into fewer components.</li>
+								<li><strong>Eigen-decomposition:</strong> Factorize C into eigenvectors (the principal directions) and eigenvalues (the variance along each direction). The first eigenvector points toward maximum variance.</li>
+								<li><strong>Sort:</strong> Order eigenvectors by descending eigenvalue so the first component always captures the most variance.</li>
+								<li><strong>Project:</strong> Multiply the centered data by the top-k eigenvectors: <code>Z = X_c @ V_k</code>. The result has shape (n_samples, k).</li>
+								<li><strong>Reconstruct:</strong> Map back to original space with <code>X_hat = Z @ V_k^T + mean</code>. The difference between X and X_hat is the reconstruction error — information that was dropped.</li>
+							</ul>
+							<p>The implementation uses <code>np.linalg.svd</code> on the centered data matrix directly rather than computing the covariance and then calling <code>np.linalg.eigh</code>. Both routes produce the same eigenvectors, but SVD is numerically more stable because it avoids squaring the data matrix. The relationship between them: the right singular vectors of X_c are the eigenvectors of C, and eigenvalues relate to singular values by <code>lambda_i = sigma_i^2 / (n-1)</code>.</p>
+							<p>The class exposes the same API as sklearn — <code>fit</code>, <code>transform</code>, <code>fit_transform</code>, <code>inverse_transform</code> — plus <code>components_</code>, <code>explained_variance_</code>, <code>explained_variance_ratio_</code>, and <code>singular_values_</code>. This makes side-by-side validation straightforward.</p>
+						</section>
+
+						<section id="results" class="blog-section">
+							<h3>Results &amp; Notebook</h3>
+							<p>Reducing from 10 dimensions to 2: PC1 captures 30.6% of variance, PC2 captures 20.3%, for a combined 51.0%. Despite PCA being completely unsupervised — it never sees the class labels — the 2D projection shows clear separation between all three classes. The informative features happened to align well with the directions of maximum variance, which is not guaranteed in general but is common when the informative features genuinely drive most of the data's spread.</p>
+							<p>Numerical validation: explained variance, variance ratios, and projections all match sklearn to within 1e-6. Eigenvectors may differ by sign (negating a direction is still the same axis), so the check is done on absolute values of the projections. All three comparisons return True.</p>
+							<p>The reconstruction error analysis is the most instructive part. At k=2, relative error is 49% — half the information is lost. At k=5, it drops to around 25%. At k=10 (all components), error is effectively zero, confirming the math is self-consistent. The scree plot shows the elbow around PC3, which is a practical signal that 2 or 3 components are the natural choice for this dataset. For downstream ML tasks where accuracy matters more than visualization, the cumulative variance curve suggests 7 components to exceed 95% retained variance.</p>
+							<ul class="actions">
+								<li><a href="https://www.kaggle.com/code/gourabr0y555/pca-from-scratch" class="button primary icon solid fa-code" target="_blank">View Notebook Code</a></li>
+							</ul>
+						</section>
+
+						<hr />
+
+						<ul class="actions">
+							<li><a href="../index.html" class="button">← Return Home</a></li>
+						</ul>
+					</div>
+				</section>
+			</div>
+
+			<section id="footer">
+				<div class="container">
+					<ul class="copyright">
+						<li>&copy; Gourab Roy. All rights reserved.</li>
+					</ul>
+				</div>
+			</section>
+		</div>
+
+		<script src="../assets/js/jquery.min.js"></script>
+		<script src="../assets/js/jquery.scrollex.min.js"></script>
+		<script src="../assets/js/jquery.scrolly.min.js"></script>
+		<script src="../assets/js/browser.min.js"></script>
+		<script src="../assets/js/breakpoints.min.js"></script>
+		<script src="../assets/js/util.js"></script>
+		<script src="../assets/js/main.js"></script>
+		<script src="../assets/js/techguru.js"></script>
+
+	</body>
+</html>

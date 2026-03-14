@@ -1,0 +1,111 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<title>DBSCAN from Scratch</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="stylesheet" href="../assets/css/main.css" />
+		<link rel="stylesheet" href="../assets/css/techguru.css" />
+		<style>
+			section.blog-section {
+				min-height: 60vh;
+				padding-top: 2em;
+			}
+		</style>
+	</head>
+	<body class="is-preload">
+
+		<canvas id="particles-canvas"></canvas>
+
+		<section id="header">
+			<header>
+				<span class="image avatar"><img src="../images/avatar.jpg" alt="" /></span>
+				<h1 id="logo"><a href="../index.html"><span id="typed-name" data-text="Gourab Roy">Gourab Roy</span></a></h1>
+				<span class="role-badge">ML Engineer &amp; Researcher</span>
+				<p><span class="status-online"></span>Data Scientist<br />
+				Deep Learning · LLMs · Computer Vision</p>
+			</header>
+			<nav id="nav">
+				<ul>
+					<li><a href="../index.html">← Home</a></li>
+					<li><a href="#intro" class="active">Introduction</a></li>
+					<li><a href="#algorithm">The Algorithm</a></li>
+					<li><a href="#results">Results &amp; Notebook</a></li>
+				</ul>
+			</nav>
+			<footer>
+				<ul class="icons">
+					<li><a href="https://www.kaggle.com/gourabr0y555/" class="icon brands fa-kaggle"><span class="label">Kaggle</span></a></li>
+					<li><a href="https://github.com/crimsonKn1ght/" class="icon brands fa-github"><span class="label">Github</span></a></li>
+					<li><a href="mailto:gourab.roy.aiml@gmail.com" class="icon solid fa-envelope"><span class="label">Email</span></a></li>
+				</ul>
+			</footer>
+		</section>
+
+		<div id="wrapper">
+			<div id="main">
+				<section id="one">
+					<div class="container">
+						<header class="major">
+							<h2>DBSCAN from Scratch</h2>
+							<p>Density-based clustering with noise detection in pure NumPy</p>
+						</header>
+
+						<section id="intro" class="blog-section">
+							<h3>Introduction</h3>
+							<p>K-Means requires you to decide how many clusters exist before you look at the data. That assumption breaks down quickly in practice, where clusters can have arbitrary shapes, unequal sizes, and regions of sparse points that don't belong to any group. DBSCAN (Density-Based Spatial Clustering of Applications with Noise) sidesteps the problem entirely by grouping points based on local density rather than distance to a fixed set of centroids.</p>
+							<p>The idea is straightforward: wherever points are packed tightly, that's a cluster. Where they're sparse and isolated, that's noise. Two parameters define "tightly packed": <code>eps</code>, the search radius around each point, and <code>min_samples</code>, the minimum number of points (including the point itself) that must fall within that radius for the point to be considered a cluster core. Small <code>eps</code> creates many small clusters and more noise; large <code>eps</code> merges clusters together.</p>
+							<p>This notebook implements the full algorithm in pure NumPy and tests it on a synthetic dataset of three Gaussian clusters with deliberately scattered noise points. No scikit-learn clustering is used for the core logic.</p>
+						</section>
+
+						<section id="algorithm" class="blog-section">
+							<h3>The Algorithm</h3>
+							<p>DBSCAN classifies every point into one of three types before assigning cluster labels:</p>
+							<ul>
+								<li><strong>Core point:</strong> Has at least <code>min_samples</code> neighbours within radius <code>eps</code>. Core points are the seeds that clusters grow from.</li>
+								<li><strong>Border point:</strong> Falls within the <code>eps</code> neighbourhood of a core point but does not have enough neighbours to be a core itself. It gets absorbed into the core's cluster as a satellite.</li>
+								<li><strong>Noise point:</strong> Not reachable from any core point. Assigned label <code>-1</code> and left out of all clusters.</li>
+							</ul>
+							<p>The implementation has three methods. <code>region_query(X, idx)</code> computes Euclidean distance from point <code>idx</code> to every other point and returns indices of those within <code>eps</code>. <code>expand_cluster</code> grows a cluster iteratively: it starts from a core point, appends all its neighbours to a queue, and for each unvisited neighbour that is itself a core point, appends that point's neighbours too. This continues until the queue is exhausted, capturing every point density-reachable from the original seed. <code>fit(X)</code> loops over all points, skips visited ones, and delegates to <code>expand_cluster</code> whenever a core point is found.</p>
+							<p>The naive implementation runs <code>region_query</code> once per point, making the total complexity O(N squared). For 340 points this is instant. At larger scales (tens of thousands of points), the standard fix is to replace the distance loop in <code>region_query</code> with a KD-Tree query, bringing complexity down to O(N log N) since each neighbour lookup becomes a tree traversal rather than a full scan.</p>
+						</section>
+
+						<section id="results" class="blog-section">
+							<h3>Results &amp; Notebook</h3>
+							<p>The test dataset has 300 cluster points (100 per cluster, each drawn from a Gaussian with std=0.3 centered at a different 2D coordinate) plus 40 noise points scattered uniformly across [-4, 4]. With <code>eps=0.5</code> and <code>min_samples=5</code>, the algorithm finds exactly 3 clusters and correctly identifies the majority of the 40 noise points as label -1.</p>
+							<p>The parameter choices are deliberate. The cluster spread (std=0.3) means points within the same cluster are typically less than 0.5 apart, so <code>eps=0.5</code> connects them. The noise points are uniform over a 64 square-unit area, making them sparse enough that most fall outside the 0.5-radius neighbourhood of any core. A handful of noise points near cluster edges may be absorbed as border points — this is correct behaviour, not a bug. Border point classification is always relative to local density, so points that happen to stray close to a dense region legitimately belong there.</p>
+							<p>One thing DBSCAN does not handle well is clusters with very different densities. If one cluster is tight (std=0.1) and another is spread out (std=1.0), no single <code>eps</code> value works well for both simultaneously. The tight cluster needs small <code>eps</code>, but that same value splits the loose cluster into fragments or labels most of it noise. HDBSCAN extends the density idea to handle this by building a hierarchy of clusterings at different density thresholds and extracting the most stable ones, at the cost of more complexity.</p>
+							<ul class="actions">
+								<li><a href="https://www.kaggle.com/code/gourabr0y555/dbscan-from-scratch" class="button primary icon solid fa-code" target="_blank">View Notebook Code</a></li>
+							</ul>
+						</section>
+
+						<hr />
+
+						<ul class="actions">
+							<li><a href="../index.html" class="button">← Return Home</a></li>
+						</ul>
+					</div>
+				</section>
+			</div>
+
+			<section id="footer">
+				<div class="container">
+					<ul class="copyright">
+						<li>&copy; Gourab Roy. All rights reserved.</li>
+					</ul>
+				</div>
+			</section>
+		</div>
+
+		<script src="../assets/js/jquery.min.js"></script>
+		<script src="../assets/js/jquery.scrollex.min.js"></script>
+		<script src="../assets/js/jquery.scrolly.min.js"></script>
+		<script src="../assets/js/browser.min.js"></script>
+		<script src="../assets/js/breakpoints.min.js"></script>
+		<script src="../assets/js/util.js"></script>
+		<script src="../assets/js/main.js"></script>
+		<script src="../assets/js/techguru.js"></script>
+
+	</body>
+</html>
