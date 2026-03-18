@@ -753,7 +753,17 @@ input[type="button"]:hover,
   margin-bottom: 0.75em;
 }
 
-#subscribe-email {
+.embeddable-buttondown-form label {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.72em;
+  color: var(--text-muted);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 0.6em;
+}
+
+#bd-email {
   flex: 1;
   background: rgba(0, 0, 0, 0.4) !important;
   border: 1px solid var(--border-dim) !important;
@@ -767,14 +777,32 @@ input[type="button"]:hover,
   min-width: 0;
 }
 
-#subscribe-email::placeholder {
+#bd-email::placeholder {
   color: var(--text-muted);
   opacity: 1;
 }
 
-#subscribe-email:focus {
+#bd-email:focus {
   border-color: rgba(0, 212, 255, 0.5) !important;
   box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.08);
+}
+
+.buttondown-credit {
+  margin: 0.5em 0 0 !important;
+}
+
+.buttondown-credit a {
+  font-family: var(--font-mono);
+  font-size: 0.65em !important;
+  color: var(--text-muted) !important;
+  letter-spacing: 0.04em;
+  border-bottom: none !important;
+  text-shadow: none !important;
+}
+
+.buttondown-credit a:hover {
+  color: var(--text-secondary) !important;
+  text-shadow: none !important;
 }
 
 .subscribe-form input[type="submit"] {
