@@ -1,0 +1,116 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<title>Backpropagation from Scratch</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="stylesheet" href="../assets/css/main.css" />
+		<link rel="stylesheet" href="../assets/css/techguru.css" />
+		<style>
+			section.blog-section {
+				min-height: 60vh;
+				padding-top: 2em;
+			}
+		</style>
+	</head>
+	<body class="is-preload">
+
+		<canvas id="particles-canvas"></canvas>
+
+		<section id="header">
+			<header>
+				<span class="image avatar"><img src="../images/avatar.jpg" alt="" /></span>
+				<h1 id="logo"><a href="../index.html"><span id="typed-name" data-text="Gourab Roy">Gourab Roy</span></a></h1>
+				<span class="role-badge">ML Engineer &amp; Researcher</span>
+				<p><span class="status-online"></span>Data Scientist<br />
+				Deep Learning · LLMs · Computer Vision</p>
+			</header>
+			<nav id="nav">
+				<ul>
+					<li><a href="../index.html">← Home</a></li>
+					<li><a href="#intro" class="active">Introduction</a></li>
+					<li><a href="#math">The Math &amp; Implementation</a></li>
+					<li><a href="#results">Results &amp; Notebook</a></li>
+				</ul>
+			</nav>
+			<footer>
+				<ul class="icons">
+					<li><a href="https://www.kaggle.com/gourabr0y555/" class="icon brands fa-kaggle"><span class="label">Kaggle</span></a></li>
+					<li><a href="https://github.com/crimsonKn1ght/" class="icon brands fa-github"><span class="label">Github</span></a></li>
+					<li><a href="mailto:gourab.roy.aiml@gmail.com" class="icon solid fa-envelope"><span class="label">Email</span></a></li>
+				</ul>
+			</footer>
+		</section>
+
+		<div id="wrapper">
+			<div id="main">
+				<section id="one">
+					<div class="container">
+						<header class="major">
+							<h2>Backpropagation from Scratch</h2>
+							<p>Training a neural network by hand with NumPy, no autograd, no shortcuts</p>
+						</header>
+
+						<section id="intro" class="blog-section">
+							<h3>Introduction</h3>
+							<p>Every neural network library hides the training loop behind a <code>.backward()</code> call. You define a loss, call backward, and the gradients appear. This is great for building models quickly, but it makes it easy to treat backpropagation as a black box. Writing it yourself, even once, changes that permanently.</p>
+							<p>This notebook builds a fully connected neural network from scratch using only NumPy. No PyTorch, no TensorFlow, no autograd. The network trains on a binary classification task using sigmoid activations, binary cross-entropy loss, and gradient descent. Every gradient is computed by hand following the chain rule, and every weight update is written out explicitly.</p>
+							<p>The goal is not to produce a production-ready library. It is to make the math concrete enough that you can follow what a real framework does when you look under the hood. Once you have written the update rule for a single layer, the rest is just repeating the same logic backwards through the network.</p>
+						</section>
+
+						<section id="math" class="blog-section">
+							<h3>The Math &amp; Implementation</h3>
+							<p>Training a neural network comes down to two passes. The forward pass computes predictions. The backward pass figures out how much each weight contributed to the error, then nudges them in the direction that reduces it.</p>
+							<p><strong>Forward pass:</strong> For each layer, compute a linear combination of the inputs and weights: <code>Z = W @ X + b</code>, then apply an activation function to get the output <code>A = activation(Z)</code>. The output of one layer feeds into the next. The final layer uses sigmoid to produce a probability between 0 and 1.</p>
+							<p><strong>Loss:</strong> Binary cross-entropy measures how far the predicted probabilities are from the true labels: <code>L = -[y * log(a) + (1-y) * log(1-a)]</code>. This loss is close to zero when the prediction is confident and correct, and blows up when the prediction is confident and wrong.</p>
+							<p><strong>Backward pass:</strong> This is where the chain rule comes in. The gradient of the loss with respect to any weight is computed by chaining together the partial derivatives through every operation that weight touched. Working backwards from the output:</p>
+							<ul>
+								<li><strong>Output layer gradient:</strong> <code>dL/dZ = A - Y</code> for sigmoid + cross-entropy. This clean form is one reason these two are almost always paired together.</li>
+								<li><strong>Weight gradients:</strong> <code>dL/dW = (1/m) * dZ @ A_prev.T</code> and <code>dL/db = (1/m) * sum(dZ)</code>, where m is the batch size and A_prev is the activation from the layer before.</li>
+								<li><strong>Propagate backwards:</strong> Pass the gradient through the weight matrix transposed to get <code>dA_prev = W.T @ dZ</code>, then multiply by the activation derivative to get <code>dZ_prev = dA_prev * activation_deriv(Z_prev)</code>.</li>
+								<li><strong>Weight update:</strong> Subtract the scaled gradient: <code>W = W - lr * dW</code>, <code>b = b - lr * db</code>.</li>
+							</ul>
+							<p>The implementation stores the intermediate values from the forward pass (the Z and A arrays for each layer) in a cache, because the backward pass needs them. Without the cache, you would have to recompute half the forward pass again for each gradient, which gets expensive fast.</p>
+							<p>Weight initialization matters more than it looks. Initializing all weights to zero breaks the symmetry: every neuron in a layer computes the same gradient and learns the same thing, so you effectively have a single neuron no matter how many you add. Small random initialization (scaled by <code>sqrt(1/n_prev)</code> for Xavier-style scaling) breaks this symmetry without sending activations into the saturated tails of sigmoid from the start.</p>
+						</section>
+
+						<section id="results" class="blog-section">
+							<h3>Results &amp; Notebook</h3>
+							<p>The network is a two-hidden-layer architecture: input layer matching the feature count, two hidden layers with 8 and 4 units respectively, and a single sigmoid output unit. The training dataset is a synthetic binary classification problem generated with <code>make_classification</code>, 1000 samples with 10 features.</p>
+							<p>After 1000 gradient descent steps with a learning rate of 0.01, cross-entropy loss drops from around 0.69 (random chance for balanced classes) to below 0.15. Test accuracy comes in at 96%. The loss curve drops steeply in the first 200 iterations and flattens out afterward, which is the typical pattern for a well-tuned learning rate on a well-separable problem.</p>
+							<p>One thing that becomes obvious writing this from scratch: the gradient computation for a 3-layer network is not complicated, it is just tedious. The chain rule always works the same way. Each layer only needs to know three things: the gradient flowing in from the layer above, its own cached Z, and the previous layer's activation. That locality is actually what makes deep networks tractable to train, and it is also why the computational graph abstraction that frameworks like PyTorch use makes sense once you have done this by hand.</p>
+							<p>A common issue when implementing this for the first time is a vanishing gradient. If you use too many layers with sigmoid, the gradient gets multiplied by values below 1 at each step and shrinks to near-zero by the time it reaches the early layers. ReLU avoids this because its derivative is either 0 or 1, which does not compound the shrinkage. The notebook sticks with sigmoid to keep the math self-contained, but the fix for deeper networks is simply switching to ReLU in the hidden layers.</p>
+							<ul class="actions">
+								<li><a href="https://www.kaggle.com/code/gourabr0y555/backpropagation-from-scratch-for-nn" class="button primary icon solid fa-code" target="_blank">View Notebook Code</a></li>
+							</ul>
+						</section>
+
+						<hr />
+
+						<ul class="actions">
+							<li><a href="../index.html" class="button">← Return Home</a></li>
+						</ul>
+					</div>
+				</section>
+			</div>
+
+			<section id="footer">
+				<div class="container">
+					<ul class="copyright">
+						<li>&copy; Gourab Roy. All rights reserved.</li>
+					</ul>
+				</div>
+			</section>
+		</div>
+
+		<script src="../assets/js/jquery.min.js"></script>
+		<script src="../assets/js/jquery.scrollex.min.js"></script>
+		<script src="../assets/js/jquery.scrolly.min.js"></script>
+		<script src="../assets/js/browser.min.js"></script>
+		<script src="../assets/js/breakpoints.min.js"></script>
+		<script src="../assets/js/util.js"></script>
+		<script src="../assets/js/main.js"></script>
+		<script src="../assets/js/techguru.js"></script>
+
+	</body>
+</html>
