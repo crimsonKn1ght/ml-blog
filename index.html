@@ -25,6 +25,7 @@
 					<li><a href="#one" class="active">About</a></li>
 					<li><a href="#two">Tech Stack</a></li>
 					<li><a href="#three">Articles</a></li>
+					<li><a href="#four">Subscribe</a></li>
 				</ul>
 			</nav>
 			<footer>
@@ -258,6 +259,33 @@
 								</a>
 							</article>
 
+						</div>
+					</div>
+				</section>
+
+				<!-- Subscribe -->
+				<section id="four">
+					<div class="container">
+						<h3>Stay Updated</h3>
+						<p>// get notified when new articles drop</p>
+						<div class="subscribe-box">
+							<!--
+								Replace YOUR_USERNAME with your Buttondown username.
+								Sign up free at https://buttondown.email
+								Subscriber emails are stored in your Buttondown account only — never in this repo.
+							-->
+							<form
+								action="https://buttondown.email/api/emails/embed-subscribe/YOUR_USERNAME"
+								method="post"
+								target="popupwindow"
+								onsubmit="window.open('https://buttondown.email/YOUR_USERNAME', 'popupwindow')"
+								class="subscribe-form">
+								<div class="subscribe-row">
+									<input type="email" name="email" id="subscribe-email" placeholder="your@email.com" required />
+									<input type="submit" value="Subscribe" />
+								</div>
+								<p class="subscribe-note">No spam. Unsubscribe anytime.</p>
+							</form>
 						</div>
 					</div>
 				</section>

@@ -709,6 +709,108 @@ input[type="button"]:hover,
   box-shadow: 0 0 25px rgba(0, 212, 255, 0.3) !important;
 }
 
+/* ── Section #four — Subscribe ── */
+#four h3 {
+  color: var(--text-primary);
+  font-size: 1.5em;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.3em;
+}
+
+#four h3::before {
+  content: '// ';
+  color: var(--accent-violet);
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+}
+
+#four > .container > p {
+  color: var(--text-muted);
+  font-size: 0.9em;
+  font-family: var(--font-mono);
+  letter-spacing: 0.02em;
+  margin-bottom: 2em;
+}
+
+.subscribe-box {
+  background: rgba(13, 17, 23, 0.6);
+  border: 1px solid var(--border-dim);
+  border-radius: 10px;
+  padding: 2em 2.5em;
+  max-width: 520px;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.subscribe-box:focus-within {
+  border-color: var(--border-glow);
+  box-shadow: 0 0 30px rgba(0, 212, 255, 0.08);
+}
+
+.subscribe-row {
+  display: flex;
+  gap: 0.75em;
+  align-items: center;
+  margin-bottom: 0.75em;
+}
+
+#subscribe-email {
+  flex: 1;
+  background: rgba(0, 0, 0, 0.4) !important;
+  border: 1px solid var(--border-dim) !important;
+  border-radius: 6px !important;
+  color: var(--text-primary) !important;
+  font-family: var(--font-mono) !important;
+  font-size: 0.82em !important;
+  padding: 0.65em 1em !important;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  min-width: 0;
+}
+
+#subscribe-email::placeholder {
+  color: var(--text-muted);
+  opacity: 1;
+}
+
+#subscribe-email:focus {
+  border-color: rgba(0, 212, 255, 0.5) !important;
+  box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.08);
+}
+
+.subscribe-form input[type="submit"] {
+  flex-shrink: 0;
+  white-space: nowrap;
+  cursor: pointer;
+  padding: 0.65em 1.4em !important;
+}
+
+.subscribe-note {
+  color: var(--text-muted) !important;
+  font-family: var(--font-mono);
+  font-size: 0.72em !important;
+  letter-spacing: 0.04em;
+  margin: 0 !important;
+}
+
+.subscribe-note::before {
+  content: '🔒 ';
+}
+
+@media screen and (max-width: 480px) {
+  .subscribe-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .subscribe-form input[type="submit"] {
+    width: 100%;
+  }
+
+  .subscribe-box {
+    padding: 1.5em;
+  }
+}
+
 /* ── HR ── */
 hr {
   border-bottom-color: var(--border-dim) !important;
