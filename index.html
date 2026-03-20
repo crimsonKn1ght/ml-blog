@@ -91,9 +91,27 @@
 					<div class="container">
 						<h3>Articles &amp; Research</h3>
 						<p>// in-depth technical breakdowns &amp; experiments</p>
-						<div class="features">
 
-							<article>
+						<!-- Toolbar -->
+						<div class="articles-toolbar">
+							<div class="articles-search">
+								<span class="s-icon">❯</span>
+								<input type="text" id="article-search" placeholder="search articles..." autocomplete="off" spellcheck="false" />
+								<span class="search-count" id="search-count">12 articles</span>
+							</div>
+							<div class="filter-row">
+								<button class="filter-btn active" data-filter="all">all</button>
+								<button class="filter-btn" data-filter="scratch">from scratch</button>
+								<button class="filter-btn" data-filter="deep-learning">deep learning</button>
+								<button class="filter-btn" data-filter="clustering">clustering</button>
+								<button class="filter-btn" data-filter="ml">ml / classic</button>
+								<button class="filter-btn" data-filter="pytorch">pytorch</button>
+							</div>
+						</div>
+
+						<div class="features" id="articles-grid">
+
+							<article data-cats="ml">
 								<a href="./meta-stacking" style="border-bottom:none;">
 									<div class="inner">
 										<h4>Meta-Stacking</h4>
@@ -108,7 +126,7 @@
 								</a>
 							</article>
 
-							<article>
+							<article data-cats="ml">
 								<a href="./adversarial-validation" style="border-bottom:none;">
 									<div class="inner">
 										<h4>Adversarial Validation</h4>
@@ -123,7 +141,7 @@
 								</a>
 							</article>
 
-							<article>
+							<article data-cats="deep-learning pytorch">
 								<a href="./time-series-forecasting" style="border-bottom:none;">
 									<div class="inner">
 										<h4>Time-Series Forecasting with RNNs</h4>
@@ -138,7 +156,7 @@
 								</a>
 							</article>
 
-							<article>
+							<article data-cats="ml">
 								<a href="./catboost-polynomial" style="border-bottom:none;">
 									<div class="inner">
 										<h4>CatBoostClassifier on Polynomial Features</h4>
@@ -153,7 +171,7 @@
 								</a>
 							</article>
 
-							<article>
+							<article data-cats="clustering scratch">
 								<a href="./k-means-clustering" style="border-bottom:none;">
 									<div class="inner">
 										<h4>K-Means Clustering with Inertia Measurement</h4>
@@ -168,7 +186,7 @@
 								</a>
 							</article>
 
-							<article>
+							<article data-cats="deep-learning pytorch">
 								<a href="./openai-cartpole" style="border-bottom:none;">
 									<div class="inner">
 										<h4>Solving CartPole with a Deep Q-Network</h4>
@@ -183,7 +201,7 @@
 								</a>
 							</article>
 
-							<article>
+							<article data-cats="deep-learning pytorch">
 								<a href="./vae-autoencoder" style="border-bottom:none;">
 									<div class="inner">
 										<h4>Variational Autoencoder on MNIST</h4>
@@ -198,7 +216,7 @@
 								</a>
 							</article>
 
-							<article>
+							<article data-cats="scratch ml">
 								<a href="./decision-tree-classifier" style="border-bottom:none;">
 									<div class="inner">
 										<h4>Decision Tree Classifier from Scratch</h4>
@@ -213,7 +231,7 @@
 								</a>
 							</article>
 
-							<article>
+							<article data-cats="scratch ml">
 								<a href="./pca-from-scratch" style="border-bottom:none;">
 									<div class="inner">
 										<h4>PCA from Scratch</h4>
@@ -228,7 +246,7 @@
 								</a>
 							</article>
 
-							<article>
+							<article data-cats="scratch clustering">
 								<a href="./dbscan-from-scratch" style="border-bottom:none;">
 									<div class="inner">
 										<h4>DBSCAN from Scratch</h4>
@@ -244,7 +262,7 @@
 							</article>
 
 
-							<article>
+							<article data-cats="scratch deep-learning">
 								<a href="./adam-optimizer" style="border-bottom:none;">
 									<div class="inner">
 										<h4>Adam Optimizer from Scratch</h4>
@@ -259,7 +277,7 @@
 								</a>
 							</article>
 
-							<article>
+							<article data-cats="scratch deep-learning">
 								<a href="./backpropagation-from-scratch" style="border-bottom:none;">
 									<div class="inner">
 										<h4>Backpropagation from Scratch</h4>
@@ -275,6 +293,7 @@
 							</article>
 
 						</div>
+						<p class="no-results" id="no-results">// no articles match</p>
 					</div>
 				</section>
 
@@ -311,5 +330,43 @@
 
 		<script async src="https://subscribe-forms.beehiiv.com/embed.js"></script>
 	<script type="text/javascript" async src="https://subscribe-forms.beehiiv.com/attribution.js"></script>
+
+	<script>
+	(function() {
+		var searchInput = document.getElementById('article-search');
+		var searchCount = document.getElementById('search-count');
+		var noResults   = document.getElementById('no-results');
+		var grid        = document.getElementById('articles-grid');
+		var filterBtns  = document.querySelectorAll('.filter-btn');
+		var activeFilter = 'all';
+
+		function filter() {
+			var q = searchInput.value.toLowerCase().trim();
+			var articles = grid.querySelectorAll('article');
+			var visible = 0;
+			articles.forEach(function(a) {
+				var text = a.textContent.toLowerCase();
+				var cats = a.getAttribute('data-cats') || '';
+				var okSearch = q === '' || text.indexOf(q) !== -1;
+				var okFilter = activeFilter === 'all' || cats.indexOf(activeFilter) !== -1;
+				if (okSearch && okFilter) { a.style.display = ''; visible++; }
+				else { a.style.display = 'none'; }
+			});
+			searchCount.textContent = visible + (visible === 1 ? ' article' : ' articles');
+			noResults.classList.toggle('visible', visible === 0);
+		}
+
+		searchInput.addEventListener('input', filter);
+
+		filterBtns.forEach(function(btn) {
+			btn.addEventListener('click', function() {
+				filterBtns.forEach(function(b) { b.classList.remove('active'); });
+				btn.classList.add('active');
+				activeFilter = btn.getAttribute('data-filter');
+				filter();
+			});
+		});
+	})();
+	</script>
 </body>
 </html>
