@@ -395,7 +395,7 @@
   .badge-amber  { background: rgba(247,184,78,0.15); color: var(--accent-amber); }
 
   /* ---- Footer ---- */
-  footer {
+  body > footer {
     border-top: 1px solid var(--border);
     padding: 40px 0;
     text-align: center;
@@ -520,7 +520,7 @@
   </div>
 
   <h3>The Gradient - ∇L(θ)</h3>
-  <p>Here is the key question: you have hundreds of knobs and a score. How do you know <em>which</em> knobs to turn and <em>in which direction</em>?</p>
+  <p>You have hundreds of knobs and a score. How do you know <em>which</em> ones to turn, and <em>in which direction</em>?</p>
 
   <p>Imagine you wiggle just one knob, knob #47, a tiny bit to the right. The score goes up (gets worse). So you know: knob #47 should go left. Now imagine you wiggle knob #112 a tiny bit to the right. The score goes down (gets better). Great, knob #112 should go right. If you did this for every single knob, you would end up with a full set of instructions: "turn knob #1 a bit left, turn knob #2 a lot right, barely touch knob #3..." and so on.</p>
 
@@ -552,7 +552,7 @@
   <h3>How the gradient is computed: backpropagation</h3>
   <p>In practice, you do not actually wiggle each knob one at a time. That would take forever with millions of parameters. Instead, neural networks use a clever algorithm called <strong>backpropagation</strong> that computes all the sensitivities at once in a single backward pass through the network. The details of how backprop works are a separate topic, but the result is what matters here: after one forward pass (make a prediction) and one backward pass (run backprop), you get the full gradient and know exactly which direction to adjust every parameter.</p>
 
-  <p>With these three pieces in hand, parameters θ, loss L(θ), and gradient ∇L(θ), we are ready to talk about how optimizers actually use the gradient to update the parameters. That starts with gradient descent.</p>
+  <p>Those three pieces, parameters θ, loss L(θ), and gradient ∇L(θ), are all an optimizer needs. The rest is just deciding how to use them. That starts with the simplest possible approach: gradient descent.</p>
 </section>
 
 <!-- ==================== 1. GRADIENT DESCENT ==================== -->
@@ -576,7 +576,7 @@
     <span class="var-blue">θ</span> <span class="op">=</span> <span class="var-blue">θ</span> <span class="op">-</span> <span class="var-amber">η</span> <span class="op">&middot;</span> <span class="var-green">∇L(θ)</span>
   </div>
 
-  <p>That is the entire algorithm. Compute the gradient ∇L(θ), multiply by a small learning rate η, and subtract from the current parameters. Each step nudges θ toward a configuration that makes predictions less wrong.</p>
+  <p>The whole algorithm is that one line. Compute ∇L(θ), scale it by η, subtract. Each step nudges θ toward a configuration that makes predictions less wrong.</p>
 
   <h3>Where it breaks down</h3>
   <p>This simple rule has real problems. If the loss landscape is shaped like a long, narrow ravine, as it very often is in high-dimensional neural networks, the gradient points mostly across the ravine rather than along it. The optimizer zigzags back and forth, barely making progress toward the actual minimum. It also treats every parameter identically: parameters whose gradients are naturally large get the same learning rate as parameters whose gradients are tiny. And in noisy settings (stochastic mini-batches), each gradient estimate is imprecise, so the path jitters even more.</p>
@@ -626,7 +626,7 @@
   </div>
 
   <p>The variable <code>v</code> here tracks the exponential moving average of squared gradients. It is the "second moment", a measure of how volatile a parameter's gradient has been. Dividing by its square root normalizes the update: wild parameters get tamed, sleepy parameters get amplified.</p>
-  <p>RMSProp is good, but it lacks the smoothing benefit of momentum. The two ideas, momentum and adaptive rates, were developed separately. The natural question is: what if you combined them?</p>
+  <p>RMSProp handles the per-parameter scaling problem, but it has no momentum. The two ideas were developed independently. The obvious next step was combining them.</p>
 </section>
 
 <!-- ==================== 4. ADAM ==================== -->
@@ -639,7 +639,7 @@
   <div class="analogy analogy-rose">
     <div class="analogy-label tag-rose">Analogy</div>
     <div class="analogy-title">The GPS Navigator with Traffic Data</div>
-    <p>Think of Adam as a GPS that combines two sources of intelligence. The first is your recent travel direction and speed (momentum, the first moment) -- it knows you have been heading north and smooths out small detours. The second is real-time road conditions for each street individually (adaptive rate, the second moment) -- it knows that Main Street is congested (high gradient variance) so it recommends driving slowly there, while the highway is clear (low variance) so it says full speed ahead. Together, these two signals produce routes that are both smooth and individually calibrated.</p>
+    <p>Think of Adam as a GPS with two data feeds. The first is your recent travel direction and speed (momentum, the first moment) — it knows you have been heading north and smooths out small detours. The second is per-road traffic data (adaptive rate, the second moment) — Main Street is congested (high gradient variance) so it routes you slowly; the highway is clear (low variance) so it says floor it. Both signals together produce routes that are smoother and individually tuned per road.</p>
   </div>
 
   <h3>Adam, step by step</h3>
@@ -734,7 +734,7 @@
       </tr>
     </tbody>
   </table>
-  <p>The original paper's recommended defaults work remarkably well across a wide range of problems. In practice, <code>η</code> is the one you are most likely to adjust.</p>
+  <p>The paper's defaults hold up well on most problems. In practice, <code>η</code> is the only one that usually needs touching.</p>
 </section>
 
 <!-- ==================== 5. INTERACTIVE SIM ==================== -->
@@ -777,7 +777,7 @@
     <canvas id="lossChart"></canvas>
   </div>
 
-  <p>Adam reaches near-zero loss dramatically faster. By epoch 200 it has already dropped below 0.05, while vanilla SGD and Momentum are still working through higher error regions. The key insight: Adam's per-parameter learning rate adjustment, combined with momentum, lets it navigate the loss landscape with much less wasted effort.</p>
+  <p>Adam reaches near-zero loss much faster. By epoch 200 it is already below 0.05, while SGD and Momentum are still grinding through higher error. Adam's per-parameter rate scaling plus momentum means far fewer wasted steps on the way down.</p>
 
   <table class="cmp-table">
     <thead>
@@ -810,21 +810,21 @@
     </tbody>
   </table>
 
-  <p>All three eventually get to 100% accuracy on this tiny problem, but the final loss tells the story of confidence. Adam's predictions are nearly perfect (probabilities within 0.001 of the target), while SGD still has measurable residual error at epoch 3,000.</p>
+  <p>All three hit 100% accuracy on XOR eventually, but the final loss numbers show how confident each model actually is. Adam's output probabilities land within 0.001 of the target. SGD still carries measurable residual error at epoch 3,000.</p>
 </section>
 
 <!-- ==================== 7. RECAP ==================== -->
 <section id="s7" class="reveal">
   <div class="section-tag tag-green">07 - Putting It Together</div>
   <h2>The Family Tree</h2>
-  <p>Here is how each optimizer builds on the last, and what Adam takes from each ancestor:</p>
+  <p>Each optimizer builds directly on the one before it:</p>
 
   <div class="chart-wrapper" style="padding:32px;">
     <canvas id="treeCanvas" width="760" height="320"></canvas>
   </div>
 
   <h3>When to use Adam</h3>
-  <p>Adam is the default starting choice for most deep learning tasks. It works well out of the box, converges fast, and requires minimal hyperparameter fiddling beyond the learning rate. It is not always the absolute best in every scenario. SGD with momentum and careful learning rate scheduling can sometimes beat it on very large-scale tasks (some ImageNet results showed this). But for prototyping, for most NLP and generative tasks, and for getting a solid baseline quickly, Adam is the workhorse.</p>
+  <p>Adam is where most people start, and it earns that position. It converges fast, adjusts step sizes per parameter automatically, and rarely blows up without warning. Pure SGD with a well-tuned schedule can edge it out on some large-scale vision tasks — there are published ImageNet results where that holds — but those experiments involve weeks of tuning the schedule. For anything involving language models, generative networks, or early-stage experiments, Adam is the practical choice. Start there, tune the learning rate, and move on.</p>
 
   <div class="analogy analogy-green">
     <div class="analogy-label tag-green">Summary</div>
