@@ -23,9 +23,9 @@
 			<nav id="nav">
 				<ul>
 					<li><a href="#one" class="active">About</a></li>
-					<li><a href="#two">Tech Stack</a></li>
 					<li><a href="#three">Articles</a></li>
 					<li><a href="#four">Subscribe</a></li>
+					<li><a href="#two">Tech Stack</a></li>
 				</ul>
 			</nav>
 			<footer>
@@ -36,6 +36,8 @@
 				</ul>
 			</footer>
 		</section>
+
+		<button id="sidebar-toggle" aria-label="Toggle sidebar"><span class="toggle-arrow">&#10095;</span></button>
 
 		<div id="wrapper">
 			<div id="main">
@@ -70,26 +72,10 @@
 					</div>
 				</section>
 
-				<!-- Tech Stack -->
-				<section id="two">
-					<div class="container">
-						<h3>Tech Stack</h3>
-						<p>// tools &amp; frameworks powering the research</p>
-						<ul class="feature-icons">
-							<li class="icon solid fa-code">Python · C++ · SQL</li>
-							<li class="icon solid fa-brain">PyTorch · CNNs · Recommender Systems</li>
-							<li class="icon solid fa-eye">OpenCV · Medical Imaging · Reconstruction</li>
-							<li class="icon solid fa-language">SBERT · FAISS · RAG · Cross-Encoders</li>
-							<li class="icon solid fa-database">PySpark · Databricks · Git</li>
-							<li class="icon solid fa-chart-line">Time-Series · RNNs · Forecasting</li>
-						</ul>
-					</div>
-				</section>
-
 				<!-- Articles -->
 				<section id="three">
 					<div class="container">
-						<h3>Articles &amp; Research</h3>
+						<h3>Articles</h3>
 						<p>// in-depth technical breakdowns &amp; experiments</p>
 
 						<!-- Toolbar -->
@@ -302,9 +288,32 @@
 					<div class="container">
 						<h3>Stay Updated</h3>
 						<p>// get notified when new articles drop</p>
-						<div class="subscribe-box">
-							<iframe src="https://subscribe-forms.beehiiv.com/86d93527-e185-4cf9-a336-036832e88eb0" class="beehiiv-embed" data-test-id="beehiiv-embed" frameborder="0" scrolling="no" style="width: 100%; height: 320px; margin: 0; border-radius: 0px 0px 0px 0px !important; background-color: transparent; box-shadow: 0 0 #0000; max-width: 100%;"></iframe>
+												<div class="subscribe-box">
+							<form class="subscribe-form" action="https://app.beehiiv.com/subscribe/86d93527-e185-4cf9-a336-036832e88eb0" method="post" target="_blank">
+								<label class="subscribe-label" for="sub-email">drop your email &mdash; get notified when new posts land</label>
+								<div class="subscribe-row">
+									<input type="email" id="sub-email" name="email" placeholder="you@example.com" required autocomplete="email" />
+									<input type="submit" value="Subscribe &rarr;" />
+								</div>
+								<p class="subscribe-note">No spam. Unsubscribe anytime.</p>
+							</form>
 						</div>
+					</div>
+				</section>
+
+				<!-- Tech Stack -->
+				<section id="two">
+					<div class="container">
+						<h3>Tech Stack</h3>
+						<p>// tools &amp; frameworks powering the research</p>
+						<ul class="feature-icons">
+							<li class="icon solid fa-code">Python · C++ · SQL</li>
+							<li class="icon solid fa-brain">PyTorch · CNNs · Recommender Systems</li>
+							<li class="icon solid fa-eye">OpenCV · Medical Imaging · Reconstruction</li>
+							<li class="icon solid fa-language">SBERT · FAISS · RAG · Cross-Encoders</li>
+							<li class="icon solid fa-database">PySpark · Databricks · Git</li>
+							<li class="icon solid fa-chart-line">Time-Series · RNNs · Forecasting</li>
+						</ul>
 					</div>
 				</section>
 

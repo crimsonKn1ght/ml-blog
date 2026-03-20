@@ -4,7 +4,9 @@
       "Bash(xargs sed:*)",
       "Bash(for f:*)",
       "Bash(do sed:*)",
-      "Bash(done)"
+      "Bash(done)",
+      "Bash(python _fix.py)",
+      "Bash(python -:*)"
     ]
   }
 }

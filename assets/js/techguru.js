@@ -201,6 +201,15 @@
     });
   }
 
+  /* ── 7. Sidebar Toggle ── */
+  function initSidebarToggle() {
+    var btn = document.getElementById('sidebar-toggle');
+    if (!btn) return;
+    btn.addEventListener('click', function () {
+      document.body.classList.toggle('sidebar-collapsed');
+    });
+  }
+
   /* ── Bootstrap ── */
   function init() {
     initParticles();
@@ -209,6 +218,7 @@
     initCardGlow();
     initScrollSpy();
     initSmoothScroll();
+    initSidebarToggle();
   }
 
   if (document.readyState === 'loading') {

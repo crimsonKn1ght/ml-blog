@@ -105,6 +105,7 @@ pre code {
   box-shadow: -4px 0 40px rgba(0, 0, 0, 0.6);
   color: var(--text-primary);
   z-index: 100;
+  transition: transform 0.35s ease;
 }
 
 #header::before {
@@ -252,6 +253,7 @@ pre code {
   background: var(--bg-primary) !important;
   position: relative;
   z-index: 1;
+  transition: padding-right 0.35s ease;
 }
 
 #main > section {
@@ -755,7 +757,16 @@ input[type="button"]:hover,
   margin-bottom: 0.6em;
 }
 
-#bd-email {
+.subscribe-label {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.72em;
+  color: var(--text-muted);
+  letter-spacing: 0.03em;
+  margin-bottom: 0.85em;
+}
+
+#sub-email {
   flex: 1;
   background: rgba(0, 0, 0, 0.4) !important;
   border: 1px solid var(--border-dim) !important;
@@ -769,12 +780,12 @@ input[type="button"]:hover,
   min-width: 0;
 }
 
-#bd-email::placeholder {
+#sub-email::placeholder {
   color: var(--text-muted);
   opacity: 1;
 }
 
-#bd-email:focus {
+#sub-email:focus {
   border-color: rgba(0, 212, 255, 0.5) !important;
   box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.08);
 }
@@ -955,5 +966,58 @@ hr {
 
 .no-results.visible {
   display: block;
+}
+
+/* ── Sidebar Toggle Button ── */
+#sidebar-toggle {
+  position: fixed;
+  right: 23em;
+  top: 50%;
+  margin-top: -24px;
+  z-index: 200;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-dim);
+  border-right: none;
+  color: var(--text-muted);
+  width: 16px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-radius: 4px 0 0 4px;
+  padding: 0;
+  font-size: 0.6em;
+  line-height: 1;
+  transition: right 0.35s ease, background 0.2s, color 0.2s, border-color 0.2s;
+  outline: none;
+}
+
+#sidebar-toggle:hover {
+  background: rgba(0, 212, 255, 0.08);
+  border-color: rgba(0, 212, 255, 0.3);
+  color: var(--accent-cyan);
+}
+
+.toggle-arrow {
+  transition: transform 0.35s ease;
+  display: inline-block;
+  pointer-events: none;
+}
+
+body.sidebar-collapsed #header {
+  transform: translateX(100%);
+}
+
+body.sidebar-collapsed #wrapper {
+  padding-right: 0 !important;
+}
+
+body.sidebar-collapsed #sidebar-toggle {
+  right: 0;
+}
+
+body.sidebar-collapsed .toggle-arrow {
+  transform: rotate(180deg);
 }
 
