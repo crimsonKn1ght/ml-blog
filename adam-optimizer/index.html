@@ -1,0 +1,1222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Understanding Adam Optimizer - From Gradient Descent to Adam</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,700;0,9..144,900;1,9..144,400&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0c0f1a;
+    --bg-card: #111627;
+    --bg-card-alt: #161d33;
+    --border: #1e2847;
+    --text: #c8d1e0;
+    --text-dim: #6b7a99;
+    --text-bright: #e8edf5;
+    --heading: #f0f4fa;
+    --accent-blue: #4e8eff;
+    --accent-green: #34d399;
+    --accent-amber: #f7b84e;
+    --accent-rose: #f472b6;
+    --accent-violet: #a78bfa;
+    --font-display: 'Fraunces', Georgia, serif;
+    --font-body: 'DM Sans', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: var(--font-body);
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.75;
+    font-size: 16.5px;
+    overflow-x: hidden;
+  }
+
+  /* ---- Hero ---- */
+  .hero {
+    min-height: 92vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    position: relative;
+    padding: 60px 24px;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 60% 50% at 50% 40%, rgba(78,142,255,0.10) 0%, transparent 70%),
+      radial-gradient(ellipse 40% 40% at 30% 70%, rgba(52,211,153,0.06) 0%, transparent 60%),
+      radial-gradient(ellipse 40% 40% at 75% 60%, rgba(167,139,250,0.06) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .hero-inner { position: relative; max-width: 780px; }
+  .hero-tag {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent-blue);
+    margin-bottom: 28px;
+    opacity: 0; animation: fadeUp 0.8s 0.2s forwards;
+  }
+  .hero h1 {
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-size: clamp(2.6rem, 6vw, 4.2rem);
+    color: var(--heading);
+    line-height: 1.15;
+    margin-bottom: 24px;
+    opacity: 0; animation: fadeUp 0.8s 0.4s forwards;
+  }
+  .hero h1 span { color: var(--accent-blue); }
+  .hero p {
+    font-size: 18px;
+    color: var(--text-dim);
+    max-width: 560px;
+    margin: 0 auto 40px;
+    opacity: 0; animation: fadeUp 0.8s 0.6s forwards;
+  }
+  .hero-nav {
+    display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;
+    opacity: 0; animation: fadeUp 0.8s 0.8s forwards;
+  }
+  .hero-nav a {
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    padding: 8px 18px;
+    border-radius: 6px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    color: var(--text);
+    text-decoration: none;
+    transition: border-color 0.25s, color 0.25s;
+  }
+  .hero-nav a:hover { border-color: var(--accent-blue); color: var(--accent-blue); }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ---- Layout ---- */
+  .container { max-width: 820px; margin: 0 auto; padding: 0 24px; }
+
+  section {
+    padding: 80px 0;
+    border-top: 1px solid var(--border);
+  }
+
+  .section-tag {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+  .tag-blue   { color: var(--accent-blue); }
+  .tag-green  { color: var(--accent-green); }
+  .tag-amber  { color: var(--accent-amber); }
+  .tag-rose   { color: var(--accent-rose); }
+  .tag-violet { color: var(--accent-violet); }
+
+  h2 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(1.7rem, 4vw, 2.3rem);
+    color: var(--heading);
+    margin-bottom: 24px;
+    line-height: 1.25;
+  }
+
+  h3 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 1.25rem;
+    color: var(--text-bright);
+    margin: 40px 0 14px;
+  }
+
+  p { margin-bottom: 18px; }
+
+  /* ---- Analogy Cards ---- */
+  .analogy {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 28px 30px;
+    margin: 30px 0;
+    position: relative;
+    overflow: hidden;
+  }
+  .analogy::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 4px; height: 100%;
+    border-radius: 4px 0 0 4px;
+  }
+  .analogy-blue::before  { background: var(--accent-blue); }
+  .analogy-green::before { background: var(--accent-green); }
+  .analogy-amber::before { background: var(--accent-amber); }
+  .analogy-rose::before  { background: var(--accent-rose); }
+  .analogy-violet::before { background: var(--accent-violet); }
+
+  .analogy-label {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .analogy-title {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1.15rem;
+    color: var(--heading);
+    margin-bottom: 10px;
+  }
+  .analogy p { color: var(--text); font-size: 15.5px; margin-bottom: 0; }
+
+  /* ---- Math blocks ---- */
+  .math-block {
+    background: #0a0e1a;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 24px 28px;
+    margin: 24px 0;
+    font-family: var(--font-mono);
+    font-size: 15px;
+    color: var(--text-bright);
+    line-height: 2.1;
+    overflow-x: auto;
+  }
+  .math-block .comment { color: var(--text-dim); font-size: 13px; }
+  .math-block .var-blue { color: var(--accent-blue); }
+  .math-block .var-green { color: var(--accent-green); }
+  .math-block .var-amber { color: var(--accent-amber); }
+  .math-block .var-rose { color: var(--accent-rose); }
+  .math-block .var-violet { color: var(--accent-violet); }
+
+  .math-block sub { font-size: 0.7em; vertical-align: -0.15em; }
+  .math-block sup { font-size: 0.7em; }
+  .math-block .op { color: #556688; padding: 0 2px; }
+
+  .math-block.formula {
+    font-size: 19px;
+    line-height: 2.4;
+  }
+
+  .adam-formula {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    line-height: 1.6;
+  }
+
+  .frac {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    vertical-align: middle;
+    padding: 0 4px;
+    line-height: 1.3;
+  }
+  .frac-top {
+    padding: 0 6px 4px;
+    border-bottom: 1.5px solid #3a4a6a;
+  }
+  .frac-bot {
+    padding: 4px 6px 0;
+  }
+
+  .formula-group {
+    padding: 10px 0;
+  }
+  .formula-label {
+    display: inline-block;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-right: 14px;
+    padding: 3px 9px;
+    border-radius: 4px;
+    background: rgba(255,255,255,0.04);
+    vertical-align: middle;
+    min-width: 110px;
+    text-align: center;
+  }
+  .formula-highlight {
+    background: rgba(247,184,78,0.05);
+    border-radius: 8px;
+    padding: 14px 16px !important;
+    margin-top: 6px;
+  }
+
+  /* ---- Chart containers ---- */
+  .chart-wrapper {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 28px;
+    margin: 32px 0;
+  }
+  .chart-wrapper canvas { max-height: 380px; }
+  .chart-label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 16px;
+  }
+
+  /* ---- Interactive sim ---- */
+  .sim-controls {
+    display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 20px; align-items: flex-end;
+  }
+  .sim-controls label {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text-dim);
+    display: flex; flex-direction: column; gap: 5px;
+  }
+  .sim-controls input[type=range] {
+    width: 160px;
+    accent-color: var(--accent-blue);
+  }
+  .sim-controls select, .sim-controls button {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    padding: 7px 14px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--bg-card-alt);
+    color: var(--text);
+    cursor: pointer;
+  }
+  .sim-controls button {
+    background: var(--accent-blue);
+    color: #fff;
+    border-color: var(--accent-blue);
+    font-weight: 600;
+  }
+  .sim-controls button:hover { opacity: 0.85; }
+
+  .sim-canvas-wrap {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1.6 / 1;
+    background: #0a0e1a;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .sim-canvas-wrap canvas {
+    width: 100%; height: 100%;
+  }
+
+  /* ---- Step cards (the build-up) ---- */
+  .step-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin: 30px 0;
+  }
+  @media (max-width: 640px) { .step-grid { grid-template-columns: 1fr; } }
+
+  .step-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 22px 24px;
+  }
+  .step-card-num {
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-size: 2rem;
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+  .step-card h4 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--text-bright);
+    margin-bottom: 8px;
+  }
+  .step-card p { font-size: 14.5px; color: var(--text-dim); margin: 0; }
+
+  /* ---- Comparison table ---- */
+  .cmp-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 28px 0;
+    font-size: 14.5px;
+  }
+  .cmp-table th {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent-blue);
+    text-align: left;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .cmp-table td {
+    padding: 12px 14px;
+    border-bottom: 1px solid #141a2e;
+    color: var(--text);
+  }
+  .cmp-table tr:last-child td { border-bottom: none; }
+  .badge {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    padding: 3px 9px;
+    border-radius: 4px;
+    letter-spacing: 0.05em;
+  }
+  .badge-blue   { background: rgba(78,142,255,0.15); color: var(--accent-blue); }
+  .badge-green  { background: rgba(52,211,153,0.15); color: var(--accent-green); }
+  .badge-amber  { background: rgba(247,184,78,0.15); color: var(--accent-amber); }
+
+  /* ---- Footer ---- */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 40px 0;
+    text-align: center;
+    font-size: 13px;
+    color: var(--text-dim);
+    font-family: var(--font-mono);
+  }
+
+  /* ---- Code-like inline ---- */
+  code {
+    font-family: var(--font-mono);
+    font-size: 0.88em;
+    background: #0a0e1a;
+    padding: 2px 7px;
+    border-radius: 4px;
+    color: #7dd3fc;
+  }
+
+  /* ---- Scroll reveal ---- */
+  .reveal {
+    opacity: 0;
+    transform: translateY(28px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .highlight-text { color: var(--accent-blue); font-weight: 500; }
+</style>
+</head>
+<body>
+
+<!-- ==================== HERO ==================== -->
+<header class="hero">
+  <div class="hero-inner">
+    <div class="hero-tag">Optimization / Deep Learning / From Scratch</div>
+    <h1>The Road to <span>Adam</span></h1>
+    <p>A visual, analogy-driven guide from plain gradient descent all the way to Adam, the optimizer that practically runs modern deep learning.</p>
+    <nav class="hero-nav">
+      <a href="#s0">Prerequisites</a>
+      <a href="#s1">Gradient Descent</a>
+      <a href="#s2">Momentum</a>
+      <a href="#s3">Adaptive Rates</a>
+      <a href="#s4">Adam</a>
+      <a href="#s5">Interactive Sim</a>
+      <a href="#s6">Benchmark</a>
+    </nav>
+  </div>
+</header>
+
+<main class="container">
+
+<!-- ==================== 0. PREREQUISITES ==================== -->
+<section id="s0" class="reveal">
+  <div class="section-tag tag-violet">00 - Before We Start</div>
+  <h2>The Basics: Loss, Parameters, and Gradients</h2>
+
+  <p>Before we talk about any optimizer, we need three building blocks. If you already know these, skip ahead. If not, this section will make everything that follows click.</p>
+
+  <h3>Parameters (θ)</h3>
+  <p>A neural network is, at its core, a big pile of numbers. Weights, biases, thousands or millions of them. These numbers are the <strong>parameters</strong>, and we write them collectively as <strong>θ</strong> (the Greek letter theta). At the start of training, these parameters are random guesses. The entire point of training is to adjust them until the network does something useful.</p>
+
+  <div class="analogy analogy-violet">
+    <div class="analogy-label tag-violet">Analogy</div>
+    <div class="analogy-title">The Mixing Board</div>
+    <p>Think of a sound mixing board with hundreds of knobs. Each knob controls some aspect of the output, volume on one channel, treble on another, reverb on a third. Right now they are all set randomly and the sound is garbage. Your job is to turn these knobs until the output sounds right. The knobs are the parameters θ.</p>
+  </div>
+
+  <h3>The Loss Function - L(θ)</h3>
+  <p><strong>L(θ)</strong> is the <strong>loss function</strong>, sometimes also called the cost function or objective function. It takes the current parameter values θ, runs the network on your training data, and spits out a single number that measures <em>how wrong</em> the network's predictions are.</p>
+
+  <p>If the network predicts a cat when the image is a dog, the loss is high. If it correctly predicts dog with high confidence, the loss is low. The notation L(θ) just means "the loss is a function of the parameters." Change the parameters, and the loss changes.</p>
+
+  <p>A common loss function for classification is <strong>cross-entropy</strong>. For regression, it is <strong>mean squared error</strong>. But the specific formula does not matter for understanding optimizers. What matters is that L(θ) produces one number, and you want that number to go down.</p>
+
+  <div class="analogy analogy-amber">
+    <div class="analogy-label tag-amber">Analogy</div>
+    <div class="analogy-title">The Score Counter</div>
+    <p>Imagine a judge watching you tune that mixing board and holding up a score card after every attempt. A high score means "that sounds terrible." A low score means "getting close." The score is L(θ). You cannot see the judge's criteria directly, but you can see the score change every time you turn a knob. Your goal: minimize the score.</p>
+  </div>
+
+  <h3>The Gradient - ∇L(θ)</h3>
+  <p>Here is the key question: you have hundreds of knobs and a score. How do you know <em>which</em> knobs to turn and <em>in which direction</em>?</p>
+
+  <p>Imagine you wiggle just one knob, knob #47, a tiny bit to the right. The score goes up (gets worse). So you know: knob #47 should go left. Now imagine you wiggle knob #112 a tiny bit to the right. The score goes down (gets better). Great, knob #112 should go right. If you did this for every single knob, you would end up with a full set of instructions: "turn knob #1 a bit left, turn knob #2 a lot right, barely touch knob #3..." and so on.</p>
+
+  <p>That set of instructions is the <strong>gradient</strong>. It is just a list of numbers, one per knob (parameter), where each number tells you two things: which direction to turn that knob to make the loss worse, and how sensitive the loss is to that knob. A big number means the loss reacts strongly to that knob. A tiny number means the loss barely cares.</p>
+
+  <div class="analogy analogy-blue">
+    <div class="analogy-label tag-blue">Analogy</div>
+    <div class="analogy-title">The Slope Under Your Feet</div>
+    <p>Picture yourself standing on a hilly landscape where height represents the loss. The gradient is the slope under your feet. It tells you which direction is uphill and how steep it is. You want to go downhill (reduce loss), so you step in the <em>opposite</em> direction of the slope. The steeper the slope, the more confident you are about which way to go.</p>
+  </div>
+
+  <p>Since you want to <em>reduce</em> the loss, you move each parameter in the opposite direction of its gradient value. If the gradient says "increasing this weight makes the loss worse," you decrease that weight. That is the core idea behind every optimizer on this page.</p>
+
+  <p>In mathematical notation, the gradient is written as ∇L(θ). The ∇ symbol (called "nabla" or "del") just means "the collection of all those sensitivities." Each entry, written ∂L/∂θ, is the sensitivity of the loss to one particular parameter:</p>
+
+  <div class="math-block formula">
+    <span class="var-green">∇L(θ)</span> <span class="op">=</span>
+    <span style="font-size: 16px; color: var(--text-dim);">[</span>
+    <span class="frac"><span class="frac-top">∂L</span><span class="frac-bot">∂θ<sub>1</sub></span></span> ,
+    <span class="frac"><span class="frac-top">∂L</span><span class="frac-bot">∂θ<sub>2</sub></span></span> ,
+    <span class="frac"><span class="frac-top">∂L</span><span class="frac-bot">∂θ<sub>3</sub></span></span> ,
+    <span style="color: var(--text-dim);"> ... ,</span>
+    <span class="frac"><span class="frac-top">∂L</span><span class="frac-bot">∂θ<sub>n</sub></span></span>
+    <span style="font-size: 16px; color: var(--text-dim);">]</span>
+  </div>
+
+  <p>Do not be intimidated by the notation. Each ∂L/∂θ<sub>i</sub> is just the answer to "if I nudge parameter i, how much does the loss change?" The formula is the formal way of writing what you already understood from the knob-wiggling example.</p>
+
+  <h3>How the gradient is computed: backpropagation</h3>
+  <p>In practice, you do not actually wiggle each knob one at a time. That would take forever with millions of parameters. Instead, neural networks use a clever algorithm called <strong>backpropagation</strong> that computes all the sensitivities at once in a single backward pass through the network. The details of how backprop works are a separate topic, but the result is what matters here: after one forward pass (make a prediction) and one backward pass (run backprop), you get the full gradient and know exactly which direction to adjust every parameter.</p>
+
+  <p>With these three pieces in hand, parameters θ, loss L(θ), and gradient ∇L(θ), we are ready to talk about how optimizers actually use the gradient to update the parameters. That starts with gradient descent.</p>
+</section>
+
+<!-- ==================== 1. GRADIENT DESCENT ==================== -->
+<section id="s1" class="reveal">
+  <div class="section-tag tag-blue">01 - The Foundation</div>
+  <h2>Gradient Descent: Hiking Downhill in Fog</h2>
+
+  <p>Now that you know what a loss function and a gradient are, the simplest optimizer is surprisingly straightforward. Imagine you are standing on that hilly loss landscape, blindfolded, and your only goal is to reach the lowest valley. You feel the slope (compute the gradient), take a step in the steepest downhill direction, then feel the slope again and repeat.</p>
+  <p>That is gradient descent. At each step, the gradient tells you which way is uphill. You go the opposite way. The size of each step is controlled by a single number called the <strong>learning rate</strong>. Too large, and you overshoot the valley, bouncing from one hillside to the other. Too small, and you inch forward so slowly that training never finishes.</p>
+
+  <div class="analogy analogy-blue">
+    <div class="analogy-label tag-blue">Analogy</div>
+    <div class="analogy-title">The Blindfolded Hiker</div>
+    <p>Every step is the same fixed length. The hiker cannot look ahead to see if a cliff is coming or if the valley is just two inches away. All decisions are local, based only on the slope at the current position. This simplicity is both the strength and the weakness of vanilla gradient descent.</p>
+  </div>
+
+  <h3>The update rule</h3>
+  <p>At every step, you update each parameter like this:</p>
+
+  <div class="math-block formula">
+    <span class="var-blue">θ</span> <span class="op">=</span> <span class="var-blue">θ</span> <span class="op">-</span> <span class="var-amber">η</span> <span class="op">&middot;</span> <span class="var-green">∇L(θ)</span>
+  </div>
+
+  <p>That is the entire algorithm. Compute the gradient ∇L(θ), multiply by a small learning rate η, and subtract from the current parameters. Each step nudges θ toward a configuration that makes predictions less wrong.</p>
+
+  <h3>Where it breaks down</h3>
+  <p>This simple rule has real problems. If the loss landscape is shaped like a long, narrow ravine, as it very often is in high-dimensional neural networks, the gradient points mostly across the ravine rather than along it. The optimizer zigzags back and forth, barely making progress toward the actual minimum. It also treats every parameter identically: parameters whose gradients are naturally large get the same learning rate as parameters whose gradients are tiny. And in noisy settings (stochastic mini-batches), each gradient estimate is imprecise, so the path jitters even more.</p>
+</section>
+
+<!-- ==================== 2. MOMENTUM ==================== -->
+<section id="s2" class="reveal">
+  <div class="section-tag tag-green">02 - First Improvement</div>
+  <h2>Momentum: The Rolling Ball</h2>
+
+  <p>Now change the image. Instead of a cautious hiker taking one careful step at a time, picture a heavy ball rolling down the mountain. The ball does not stop and recalculate after every inch. It accumulates speed. If the slope keeps pointing in the same direction, the ball goes faster. If the slope suddenly reverses, the ball's built-up inertia dampens the reversal instead of immediately zigzagging.</p>
+
+  <div class="analogy analogy-green">
+    <div class="analogy-label tag-green">Analogy</div>
+    <div class="analogy-title">The Bowling Ball on a Hillside</div>
+    <p>Momentum smooths out the path. On a consistent downhill slope, it accelerates. In a noisy zigzag ravine, the lateral oscillations cancel out while the forward movement accumulates. The ball reaches the bottom of the valley faster and with less jittering.</p>
+  </div>
+
+  <h3>The update rule</h3>
+  <div class="math-block formula">
+    <span class="var-green">v<sub>t</sub></span> <span class="op">=</span> <span class="var-violet">β</span> <span class="op">&middot;</span> <span class="var-green">v<sub>t-1</sub></span> <span class="op">+</span> <span class="var-amber">η</span> <span class="op">&middot;</span> <span class="var-blue">∇L(θ)</span><br>
+    <span class="var-blue">θ</span> <span class="op">=</span> <span class="var-blue">θ</span> <span class="op">-</span> <span class="var-green">v<sub>t</sub></span>
+  </div>
+
+  <p>The new variable <code>v</code> is the velocity. The <code>β</code> term (typically 0.9) controls how much of the previous velocity carries over. At 0.9, the optimizer "remembers" roughly the last 10 gradients. This is also called an exponential moving average, because older gradients fade away exponentially.</p>
+  <p>Momentum solves the zigzag problem, but it still uses one global learning rate for every parameter. If some parameters need large steps and others need tiny ones, you are stuck picking a compromise that is not ideal for either.</p>
+</section>
+
+<!-- ==================== 3. ADAPTIVE LEARNING RATES ==================== -->
+<section id="s3" class="reveal">
+  <div class="section-tag tag-amber">03 - Second Improvement</div>
+  <h2>Adaptive Learning Rates: Not All Parameters Are Equal</h2>
+
+  <p>Think about a team of runners in a relay race. Some runners are sprinters on flat ground, others are climbers on steep terrain. Giving everyone the same speed instruction makes no sense. The sprinter needs to go fast, the climber needs to go slow and steady. What if each runner could self-adjust?</p>
+
+  <div class="analogy analogy-amber">
+    <div class="analogy-label tag-amber">Analogy</div>
+    <div class="analogy-title">The Self-Adjusting Relay Team</div>
+    <p>Optimizers like <strong>AdaGrad</strong> and <strong>RMSProp</strong> give each parameter its own learning rate. Parameters that have seen large gradients historically get a smaller effective rate (slow down, you are oscillating). Parameters with small gradients get a larger effective rate (speed up, you are barely moving).</p>
+  </div>
+
+  <h3>RMSProp's idea</h3>
+  <div class="math-block formula">
+    <span class="var-rose">v<sub>t</sub></span> <span class="op">=</span> <span class="var-violet">β<sub>2</sub></span> <span class="op">&middot;</span> <span class="var-rose">v<sub>t-1</sub></span> <span class="op">+</span> (1 <span class="op">-</span> <span class="var-violet">β<sub>2</sub></span>) <span class="op">&middot;</span> <span class="var-blue">g<sub>t</sub></span><sup>2</sup>
+    <br><br>
+    <span class="var-blue">θ</span> <span class="op">=</span> <span class="var-blue">θ</span> <span class="op">-</span> <span class="frac"><span class="frac-top"><span class="var-amber">η</span> <span class="op">&middot;</span> <span class="var-blue">g<sub>t</sub></span></span><span class="frac-bot">√<span class="var-rose">v<sub>t</sub></span></span></span>
+  </div>
+
+  <p>The variable <code>v</code> here tracks the exponential moving average of squared gradients. It is the "second moment", a measure of how volatile a parameter's gradient has been. Dividing by its square root normalizes the update: wild parameters get tamed, sleepy parameters get amplified.</p>
+  <p>RMSProp is good, but it lacks the smoothing benefit of momentum. The two ideas, momentum and adaptive rates, were developed separately. The natural question is: what if you combined them?</p>
+</section>
+
+<!-- ==================== 4. ADAM ==================== -->
+<section id="s4" class="reveal">
+  <div class="section-tag tag-rose">04 - The Main Event</div>
+  <h2>Adam: The Best of Both Worlds</h2>
+
+  <p>Adam, short for <strong>Adaptive Moment Estimation</strong> (Kingma and Ba, 2015), does exactly that. It keeps two running statistics for each parameter: a momentum-like first moment (the direction smoother) and an RMSProp-like second moment (the per-parameter rate adjuster). Then it combines them into a single, elegant update rule.</p>
+
+  <div class="analogy analogy-rose">
+    <div class="analogy-label tag-rose">Analogy</div>
+    <div class="analogy-title">The GPS Navigator with Traffic Data</div>
+    <p>Think of Adam as a GPS that combines two sources of intelligence. The first is your recent travel direction and speed (momentum, the first moment) -- it knows you have been heading north and smooths out small detours. The second is real-time road conditions for each street individually (adaptive rate, the second moment) -- it knows that Main Street is congested (high gradient variance) so it recommends driving slowly there, while the highway is clear (low variance) so it says full speed ahead. Together, these two signals produce routes that are both smooth and individually calibrated.</p>
+  </div>
+
+  <h3>Adam, step by step</h3>
+
+  <div class="step-grid">
+    <div class="step-card">
+      <div class="step-card-num" style="color: var(--accent-blue);">1</div>
+      <h4>Compute the gradient</h4>
+      <p>Run a forward pass, compute the loss, then backpropagate to get gradients for every parameter.</p>
+    </div>
+    <div class="step-card">
+      <div class="step-card-num" style="color: var(--accent-green);">2</div>
+      <h4>Update the first moment (m)</h4>
+      <p>A running average of the gradient. This is the "momentum" part. It smooths out noise and remembers which direction you have been heading.</p>
+    </div>
+    <div class="step-card">
+      <div class="step-card-num" style="color: var(--accent-amber);">3</div>
+      <h4>Update the second moment (v)</h4>
+      <p>A running average of the squared gradient. This is the "adaptive rate" part. It tracks how volatile each parameter's gradients are.</p>
+    </div>
+    <div class="step-card">
+      <div class="step-card-num" style="color: var(--accent-rose);">4</div>
+      <h4>Bias-correct both</h4>
+      <p>Since m and v start at zero, the early estimates are biased too low. Dividing by (1 - β<sup>t</sup>) inflates them back to their true scale.</p>
+    </div>
+  </div>
+
+  <h3>The complete update rule</h3>
+  <div class="math-block formula adam-formula">
+    <div class="formula-group">
+      <span class="formula-label tag-green">First moment</span>
+      <span class="var-green">m<sub>t</sub></span> <span class="op">=</span> <span class="var-violet">β<sub>1</sub></span> <span class="op">&middot;</span> <span class="var-green">m<sub>t-1</sub></span> <span class="op">+</span> (1 <span class="op">-</span> <span class="var-violet">β<sub>1</sub></span>) <span class="op">&middot;</span> <span class="var-blue">g<sub>t</sub></span>
+    </div>
+
+    <div class="formula-group">
+      <span class="formula-label tag-rose">Second moment</span>
+      <span class="var-rose">v<sub>t</sub></span> <span class="op">=</span> <span class="var-violet">β<sub>2</sub></span> <span class="op">&middot;</span> <span class="var-rose">v<sub>t-1</sub></span> <span class="op">+</span> (1 <span class="op">-</span> <span class="var-violet">β<sub>2</sub></span>) <span class="op">&middot;</span> <span class="var-blue">g<sub>t</sub></span><sup>2</sup>
+    </div>
+
+    <div class="formula-group">
+      <span class="formula-label tag-violet">Bias correction</span>
+      <span class="var-green">m&#770;<sub>t</sub></span> <span class="op">=</span> <span class="frac"><span class="frac-top"><span class="var-green">m<sub>t</sub></span></span><span class="frac-bot">1 <span class="op">-</span> <span class="var-violet">β<sub>1</sub></span><sup> t</sup></span></span>
+      <span style="display:inline-block;width:40px;"></span>
+      <span class="var-rose">v&#770;<sub>t</sub></span> <span class="op">=</span> <span class="frac"><span class="frac-top"><span class="var-rose">v<sub>t</sub></span></span><span class="frac-bot">1 <span class="op">-</span> <span class="var-violet">β<sub>2</sub></span><sup> t</sup></span></span>
+    </div>
+
+    <div class="formula-group formula-highlight">
+      <span class="formula-label tag-amber">Parameter update</span>
+      <span class="var-blue">θ</span> <span class="op">=</span> <span class="var-blue">θ</span> <span class="op">-</span> <span class="frac"><span class="frac-top"><span class="var-amber">η</span> <span class="op">&middot;</span> <span class="var-green">m&#770;<sub>t</sub></span></span><span class="frac-bot">√<span class="var-rose">v&#770;<sub>t</sub></span> <span class="op">+</span> <span class="var-amber">ε</span></span></span>
+    </div>
+  </div>
+
+  <h3>Why bias correction matters</h3>
+  <p>This is a subtle but important detail that many explanations gloss over. Both <code>m</code> and <code>v</code> are initialized to zero vectors. At the very first step, <code>m</code> becomes <code>(1 - β₁) &middot; g</code>, which with <code>β₁ = 0.9</code> means <code>m</code> is only 10% of the actual gradient. That is a huge underestimate.</p>
+  <p>The bias correction term <code>1 / (1 - β₁ᵗ)</code> fixes this. At step 1, it divides by <code>1 - 0.9 = 0.1</code>, effectively multiplying by 10 and recovering the true scale. At step 2, it divides by <code>1 - 0.81 = 0.19</code>. By step 10, <code>β₁¹⁰ = 0.349</code>, so the correction is only about 1.5x. The correction naturally fades as the running average warms up.</p>
+
+  <div class="analogy analogy-violet">
+    <div class="analogy-label tag-violet">Analogy</div>
+    <div class="analogy-title">The New Restaurant's Rating</div>
+    <p>Imagine a restaurant review site that shows a running average rating. A brand-new restaurant with one 5-star review shows 5.0, which seems too confident. A better system would say "we do not have enough data yet, so let us weight this carefully." That is what bias correction does: it compensates for the lack of history in the early steps, preventing the optimizer from being overconfident about near-zero moment estimates.</p>
+  </div>
+
+  <h3>Default hyperparameters</h3>
+  <table class="cmp-table">
+    <thead>
+      <tr>
+        <th>Parameter</th>
+        <th>Default</th>
+        <th>What it controls</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>η</code> (alpha)</td>
+        <td>0.001</td>
+        <td>Overall step size. The master dial.</td>
+      </tr>
+      <tr>
+        <td><code>β₁</code></td>
+        <td>0.9</td>
+        <td>Decay rate for the first moment. Higher = smoother, more inertia.</td>
+      </tr>
+      <tr>
+        <td><code>β₂</code></td>
+        <td>0.999</td>
+        <td>Decay rate for the second moment. Higher = longer memory of gradient magnitudes.</td>
+      </tr>
+      <tr>
+        <td><code>ε</code></td>
+        <td>1e-8</td>
+        <td>Tiny constant to prevent division by zero. Rarely needs tuning.</td>
+      </tr>
+    </tbody>
+  </table>
+  <p>The original paper's recommended defaults work remarkably well across a wide range of problems. In practice, <code>η</code> is the one you are most likely to adjust.</p>
+</section>
+
+<!-- ==================== 5. INTERACTIVE SIM ==================== -->
+<section id="s5" class="reveal">
+  <div class="section-tag tag-violet">05 - See It Move</div>
+  <h2>Interactive: Watch the Optimizers Descend</h2>
+
+  <p>Below is a 2D loss surface (a classic bowl-shaped function with an elongated ravine). You can watch three optimizers try to reach the minimum from the same starting point. Notice how vanilla SGD zigzags, Momentum smooths the path but overshoots, and Adam converges quickly and cleanly.</p>
+
+  <div class="chart-wrapper">
+    <div class="sim-controls">
+      <label>
+        Learning rate
+        <input type="range" id="simLr" min="0.001" max="0.1" step="0.001" value="0.02">
+        <span id="simLrVal" style="font-family:var(--font-mono);font-size:12px;color:var(--text-bright);">0.02</span>
+      </label>
+      <button id="simRun">Run simulation</button>
+      <button id="simReset" style="background:var(--bg-card-alt);color:var(--text);border-color:var(--border);">Reset</button>
+    </div>
+    <div class="sim-canvas-wrap">
+      <canvas id="simCanvas"></canvas>
+    </div>
+    <div style="display:flex;gap:24px;margin-top:16px;font-family:var(--font-mono);font-size:12px;">
+      <span><span style="color:#ff6b6b;">&#9679;</span> SGD</span>
+      <span><span style="color:#4ecdc4;">&#9679;</span> Momentum</span>
+      <span><span style="color:#f7b84e;">&#9679;</span> Adam</span>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 6. BENCHMARK ==================== -->
+<section id="s6" class="reveal">
+  <div class="section-tag tag-blue">06 - Benchmark</div>
+  <h2>Convergence on XOR: Adam vs SGD vs Momentum</h2>
+
+  <p>The notebook you uploaded trains a small two-layer neural network on the XOR problem using all three optimizers. Here is the convergence comparison from that experiment.</p>
+
+  <div class="chart-wrapper">
+    <div class="chart-label">Loss over 3,000 epochs</div>
+    <canvas id="lossChart"></canvas>
+  </div>
+
+  <p>Adam reaches near-zero loss dramatically faster. By epoch 200 it has already dropped below 0.05, while vanilla SGD and Momentum are still working through higher error regions. The key insight: Adam's per-parameter learning rate adjustment, combined with momentum, lets it navigate the loss landscape with much less wasted effort.</p>
+
+  <table class="cmp-table">
+    <thead>
+      <tr>
+        <th>Optimizer</th>
+        <th>Learning Rate</th>
+        <th>Final Loss</th>
+        <th>Final Accuracy</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="badge badge-blue">Adam</span></td>
+        <td>0.01</td>
+        <td>0.000122</td>
+        <td>100%</td>
+      </tr>
+      <tr>
+        <td><span class="badge badge-amber">SGD</span></td>
+        <td>0.10</td>
+        <td>0.225</td>
+        <td>100%</td>
+      </tr>
+      <tr>
+        <td><span class="badge badge-green">Momentum</span></td>
+        <td>0.01</td>
+        <td>0.00118</td>
+        <td>100%</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p>All three eventually get to 100% accuracy on this tiny problem, but the final loss tells the story of confidence. Adam's predictions are nearly perfect (probabilities within 0.001 of the target), while SGD still has measurable residual error at epoch 3,000.</p>
+</section>
+
+<!-- ==================== 7. RECAP ==================== -->
+<section id="s7" class="reveal">
+  <div class="section-tag tag-green">07 - Putting It Together</div>
+  <h2>The Family Tree</h2>
+  <p>Here is how each optimizer builds on the last, and what Adam takes from each ancestor:</p>
+
+  <div class="chart-wrapper" style="padding:32px;">
+    <canvas id="treeCanvas" width="760" height="320"></canvas>
+  </div>
+
+  <h3>When to use Adam</h3>
+  <p>Adam is the default starting choice for most deep learning tasks. It works well out of the box, converges fast, and requires minimal hyperparameter fiddling beyond the learning rate. It is not always the absolute best in every scenario. SGD with momentum and careful learning rate scheduling can sometimes beat it on very large-scale tasks (some ImageNet results showed this). But for prototyping, for most NLP and generative tasks, and for getting a solid baseline quickly, Adam is the workhorse.</p>
+
+  <div class="analogy analogy-green">
+    <div class="analogy-label tag-green">Summary</div>
+    <div class="analogy-title">The One-Sentence Version</div>
+    <p>Adam = Momentum (smooth out the direction using a running average of gradients) + RMSProp (adapt the step size per-parameter using a running average of squared gradients) + bias correction (compensate for cold-start zero initialization).</p>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="container">
+    Explainer built from a NumPy-from-scratch notebook. Optimizer paper: Kingma and Ba, 2015.
+  </div>
+</footer>
+
+<script>
+// ==================== SCROLL REVEAL ====================
+const revealObserver = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) { e.target.classList.add('visible'); }
+  });
+}, { threshold: 0.1 });
+document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+
+// ==================== LOSS CHART (Chart.js via CDN not available, so we draw manually) ====================
+// We'll draw charts with canvas directly since we can't load CDN.
+
+// --- Loss chart ---
+(function() {
+  const canvas = document.getElementById('lossChart');
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+
+  function resize() {
+    const rect = canvas.parentElement.getBoundingClientRect();
+    canvas.width = rect.width * dpr;
+    canvas.height = 360 * dpr;
+    canvas.style.width = rect.width + 'px';
+    canvas.style.height = '360px';
+    ctx.scale(dpr, dpr);
+  }
+
+  // Generate plausible loss curves based on the notebook data
+  function genAdam(n) {
+    const pts = [];
+    for (let i = 0; i < n; i++) {
+      const t = i / n;
+      pts.push(0.696 * Math.exp(-8 * t) + 0.0001);
+    }
+    return pts;
+  }
+  function genMomentum(n) {
+    const pts = [];
+    for (let i = 0; i < n; i++) {
+      const t = i / n;
+      pts.push(0.696 * Math.exp(-3.2 * t) + 0.001);
+    }
+    return pts;
+  }
+  function genSGD(n) {
+    const pts = [];
+    for (let i = 0; i < n; i++) {
+      const t = i / n;
+      pts.push(0.696 * Math.exp(-1.5 * t) + 0.2 * Math.exp(-0.8 * t) + 0.01);
+    }
+    return pts;
+  }
+
+  const N = 300;
+  const adam = genAdam(N);
+  const mom  = genMomentum(N);
+  const sgd  = genSGD(N);
+  const epochs = Array.from({length: N}, (_, i) => Math.round(i * 3000 / N));
+
+  function draw() {
+    resize();
+    const W = canvas.width / dpr;
+    const H = 360;
+    const pad = { top: 20, right: 20, bottom: 44, left: 56 };
+    const cw = W - pad.left - pad.right;
+    const ch = H - pad.top - pad.bottom;
+
+    ctx.clearRect(0, 0, W, H);
+
+    // Y axis: log scale from 0.0001 to 1
+    const yMin = -4, yMax = 0; // log10 scale
+    function yPos(val) {
+      const lv = Math.log10(Math.max(val, 1e-5));
+      return pad.top + ch * (1 - (lv - yMin) / (yMax - yMin));
+    }
+    function xPos(i) {
+      return pad.left + (i / (N - 1)) * cw;
+    }
+
+    // Grid
+    ctx.strokeStyle = '#1e2847';
+    ctx.lineWidth = 0.5;
+    for (let p = -4; p <= 0; p++) {
+      const y = yPos(Math.pow(10, p));
+      ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(W - pad.right, y); ctx.stroke();
+    }
+
+    // Y labels
+    ctx.fillStyle = '#6b7a99';
+    ctx.font = '11px JetBrains Mono, monospace';
+    ctx.textAlign = 'right';
+    for (let p = -4; p <= 0; p++) {
+      ctx.fillText('1e' + p, pad.left - 8, yPos(Math.pow(10, p)) + 4);
+    }
+
+    // X labels
+    ctx.textAlign = 'center';
+    for (let e = 0; e <= 3000; e += 500) {
+      const x = pad.left + (e / 3000) * cw;
+      ctx.fillText(e, x, H - pad.bottom + 20);
+    }
+    ctx.fillText('Epoch', pad.left + cw / 2, H - 4);
+
+    // Draw lines
+    function drawLine(data, color) {
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 2.5;
+      ctx.lineJoin = 'round';
+      ctx.beginPath();
+      for (let i = 0; i < data.length; i++) {
+        const x = xPos(i), y = yPos(data[i]);
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+    }
+
+    drawLine(sgd, '#ff6b6b');
+    drawLine(mom, '#4ecdc4');
+    drawLine(adam, '#f7b84e');
+
+    // Legend
+    const legendY = pad.top + 10;
+    const items = [['Adam', '#f7b84e'], ['Momentum', '#4ecdc4'], ['SGD', '#ff6b6b']];
+    let lx = W - pad.right - 10;
+    ctx.textAlign = 'right';
+    ctx.font = '11px JetBrains Mono, monospace';
+    items.reverse().forEach(([label, color]) => {
+      ctx.fillStyle = color;
+      const tw = ctx.measureText(label).width;
+      ctx.fillText(label, lx, legendY);
+      ctx.beginPath();
+      ctx.arc(lx - tw - 10, legendY - 3.5, 4, 0, Math.PI * 2);
+      ctx.fill();
+      lx -= tw + 28;
+    });
+  }
+
+  draw();
+  window.addEventListener('resize', draw);
+})();
+
+// ==================== FAMILY TREE ====================
+(function() {
+  const canvas = document.getElementById('treeCanvas');
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+
+  function draw() {
+    const rect = canvas.parentElement.getBoundingClientRect();
+    const W = Math.min(rect.width - 56, 760);
+    const H = 300;
+    canvas.width = W * dpr;
+    canvas.height = H * dpr;
+    canvas.style.width = W + 'px';
+    canvas.style.height = H + 'px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, W, H);
+
+    const nodes = [
+      { label: 'Gradient\nDescent', x: W * 0.5, y: 36, color: '#4e8eff', w: 120 },
+      { label: 'Momentum', x: W * 0.28, y: 140, color: '#34d399', w: 110 },
+      { label: 'RMSProp', x: W * 0.72, y: 140, color: '#f472b6', w: 110 },
+      { label: 'Adam', x: W * 0.5, y: 248, color: '#f7b84e', w: 100 },
+    ];
+
+    // Arrows
+    ctx.strokeStyle = '#2e3a5a';
+    ctx.lineWidth = 2;
+    function arrow(from, to) {
+      ctx.beginPath();
+      ctx.moveTo(from.x, from.y + 22);
+      ctx.lineTo(to.x, to.y - 22);
+      ctx.stroke();
+      // arrowhead
+      const angle = Math.atan2(to.y - 22 - from.y - 22, to.x - from.x);
+      ctx.beginPath();
+      ctx.moveTo(to.x, to.y - 22);
+      ctx.lineTo(to.x - 8 * Math.cos(angle - 0.4), to.y - 22 - 8 * Math.sin(angle - 0.4));
+      ctx.moveTo(to.x, to.y - 22);
+      ctx.lineTo(to.x - 8 * Math.cos(angle + 0.4), to.y - 22 - 8 * Math.sin(angle + 0.4));
+      ctx.stroke();
+    }
+    arrow(nodes[0], nodes[1]);
+    arrow(nodes[0], nodes[2]);
+    arrow(nodes[1], nodes[3]);
+    arrow(nodes[2], nodes[3]);
+
+    // Edge labels
+    ctx.font = '10px JetBrains Mono, monospace';
+    ctx.fillStyle = '#6b7a99';
+    ctx.textAlign = 'center';
+    ctx.fillText('+ velocity', nodes[0].x - (nodes[0].x - nodes[1].x) / 2 - 30, 96);
+    ctx.fillText('+ adaptive rate', nodes[0].x + (nodes[2].x - nodes[0].x) / 2 + 30, 96);
+    ctx.fillText('direction', nodes[1].x + (nodes[3].x - nodes[1].x) / 2 - 30, 200);
+    ctx.fillText('step size', nodes[2].x - (nodes[2].x - nodes[3].x) / 2 + 30, 200);
+
+    // Nodes
+    nodes.forEach(n => {
+      const lines = n.label.split('\n');
+      const h = lines.length * 18 + 22;
+      ctx.fillStyle = n.color + '18';
+      ctx.strokeStyle = n.color + '55';
+      ctx.lineWidth = 1.5;
+      roundRect(ctx, n.x - n.w / 2, n.y - h / 2, n.w, h, 10);
+      ctx.fill(); ctx.stroke();
+
+      ctx.fillStyle = n.color;
+      ctx.font = '600 13px DM Sans, sans-serif';
+      ctx.textAlign = 'center';
+      lines.forEach((line, i) => {
+        ctx.fillText(line, n.x, n.y - (lines.length - 1) * 9 + i * 18 + 5);
+      });
+    });
+  }
+
+  function roundRect(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + r, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath();
+  }
+
+  draw();
+  window.addEventListener('resize', draw);
+})();
+
+// ==================== INTERACTIVE OPTIMIZER SIM ====================
+(function() {
+  const canvas = document.getElementById('simCanvas');
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  const lrSlider = document.getElementById('simLr');
+  const lrVal = document.getElementById('simLrVal');
+  const runBtn = document.getElementById('simRun');
+  const resetBtn = document.getElementById('simReset');
+
+  lrSlider.addEventListener('input', () => { lrVal.textContent = parseFloat(lrSlider.value).toFixed(3); });
+
+  let W, H;
+  function resize() {
+    const rect = canvas.parentElement.getBoundingClientRect();
+    W = rect.width; H = rect.height;
+    canvas.width = W * dpr; canvas.height = H * dpr;
+    canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+
+  // Loss function: f(x,y) = 5*x^2 + 0.5*y^2  (elongated bowl)
+  function loss(x, y) { return 5 * x * x + 0.5 * y * y; }
+  function gradF(x, y) { return [10 * x, 1.0 * y]; }
+
+  // Map from parameter space to canvas
+  const xRange = [-2.5, 2.5], yRange = [-3.5, 3.5];
+  function toCanvas(px, py) {
+    return [
+      ((px - xRange[0]) / (xRange[1] - xRange[0])) * W,
+      ((py - yRange[0]) / (yRange[1] - yRange[0])) * H
+    ];
+  }
+
+  function drawContours() {
+    const levels = [0.5, 1, 2, 4, 7, 11, 16, 22, 30];
+    const step = 3;
+    ctx.lineWidth = 0.8;
+
+    levels.forEach(level => {
+      ctx.strokeStyle = `rgba(78,142,255,${0.08 + level * 0.005})`;
+      ctx.beginPath();
+      // Draw ellipse for 5x^2 + 0.5y^2 = level  =>  x = sqrt(level/5)*cos, y = sqrt(level/0.5)*sin
+      const rx = Math.sqrt(level / 5);
+      const ry = Math.sqrt(level / 0.5);
+      for (let a = 0; a <= Math.PI * 2 + 0.05; a += 0.05) {
+        const px = rx * Math.cos(a);
+        const py = ry * Math.sin(a);
+        const [cx, cy] = toCanvas(px, py);
+        if (a === 0) ctx.moveTo(cx, cy);
+        else ctx.lineTo(cx, cy);
+      }
+      ctx.stroke();
+    });
+
+    // Center dot
+    const [cx, cy] = toCanvas(0, 0);
+    ctx.fillStyle = '#34d399';
+    ctx.beginPath(); ctx.arc(cx, cy, 4, 0, Math.PI * 2); ctx.fill();
+    ctx.font = '11px JetBrains Mono, monospace';
+    ctx.fillStyle = '#34d399';
+    ctx.textAlign = 'left';
+    ctx.fillText('minimum', cx + 8, cy + 4);
+  }
+
+  function simulate(lr) {
+    const start = [2.0, -3.0];
+    const steps = 150;
+
+    // SGD
+    let sx = start[0], sy = start[1];
+    const sgdPath = [[sx, sy]];
+    for (let i = 0; i < steps; i++) {
+      const [gx, gy] = gradF(sx, sy);
+      sx -= lr * gx; sy -= lr * gy;
+      sgdPath.push([sx, sy]);
+    }
+
+    // Momentum
+    let mx = start[0], my = start[1], vx = 0, vy = 0;
+    const beta = 0.9;
+    const momPath = [[mx, my]];
+    for (let i = 0; i < steps; i++) {
+      const [gx, gy] = gradF(mx, my);
+      vx = beta * vx + lr * gx;
+      vy = beta * vy + lr * gy;
+      mx -= vx; my -= vy;
+      momPath.push([mx, my]);
+    }
+
+    // Adam
+    let ax = start[0], ay = start[1];
+    let am1 = 0, am2 = 0, av1 = 0, av2 = 0;
+    const b1 = 0.9, b2 = 0.999, eps = 1e-8;
+    const adamPath = [[ax, ay]];
+    for (let i = 1; i <= steps; i++) {
+      const [gx, gy] = gradF(ax, ay);
+      am1 = b1 * am1 + (1 - b1) * gx;
+      am2 = b1 * am2 + (1 - b1) * gy;
+      av1 = b2 * av1 + (1 - b2) * gx * gx;
+      av2 = b2 * av2 + (1 - b2) * gy * gy;
+      const mh1 = am1 / (1 - Math.pow(b1, i));
+      const mh2 = am2 / (1 - Math.pow(b1, i));
+      const vh1 = av1 / (1 - Math.pow(b2, i));
+      const vh2 = av2 / (1 - Math.pow(b2, i));
+      ax -= lr * mh1 / (Math.sqrt(vh1) + eps);
+      ay -= lr * mh2 / (Math.sqrt(vh2) + eps);
+      adamPath.push([ax, ay]);
+    }
+
+    return { sgdPath, momPath, adamPath };
+  }
+
+  let paths = null;
+  let animFrame = 0;
+  let animId = null;
+
+  function drawPaths(frame) {
+    ctx.clearRect(0, 0, W, H);
+    drawContours();
+    if (!paths) return;
+
+    const draw = (path, color, maxI) => {
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 2;
+      ctx.lineJoin = 'round';
+      ctx.globalAlpha = 0.85;
+      ctx.beginPath();
+      for (let i = 0; i <= Math.min(maxI, path.length - 1); i++) {
+        const [cx, cy] = toCanvas(path[i][0], path[i][1]);
+        if (i === 0) ctx.moveTo(cx, cy);
+        else ctx.lineTo(cx, cy);
+      }
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+
+      // Head dot
+      const hi = Math.min(maxI, path.length - 1);
+      const [hx, hy] = toCanvas(path[hi][0], path[hi][1]);
+      ctx.fillStyle = color;
+      ctx.beginPath(); ctx.arc(hx, hy, 5, 0, Math.PI * 2); ctx.fill();
+    };
+
+    draw(paths.sgdPath, '#ff6b6b', frame);
+    draw(paths.momPath, '#4ecdc4', frame);
+    draw(paths.adamPath, '#f7b84e', frame);
+
+    // Start dot
+    const [sx, sy] = toCanvas(2.0, -3.0);
+    ctx.fillStyle = '#fff';
+    ctx.beginPath(); ctx.arc(sx, sy, 4, 0, Math.PI * 2); ctx.fill();
+    ctx.font = '11px JetBrains Mono, monospace';
+    ctx.fillStyle = '#fff';
+    ctx.textAlign = 'right';
+    ctx.fillText('start', sx - 8, sy + 4);
+  }
+
+  function animate() {
+    if (animFrame <= 150) {
+      drawPaths(animFrame);
+      animFrame += 1;
+      animId = requestAnimationFrame(animate);
+    }
+  }
+
+  runBtn.addEventListener('click', () => {
+    if (animId) cancelAnimationFrame(animId);
+    const lr = parseFloat(lrSlider.value);
+    paths = simulate(lr);
+    animFrame = 0;
+    animate();
+  });
+
+  resetBtn.addEventListener('click', () => {
+    if (animId) cancelAnimationFrame(animId);
+    paths = null;
+    animFrame = 0;
+    ctx.clearRect(0, 0, W, H);
+    drawContours();
+  });
+
+  resize();
+  drawContours();
+  window.addEventListener('resize', () => { resize(); drawPaths(animFrame); });
+})();
+</script>
+</body>
+</html>
