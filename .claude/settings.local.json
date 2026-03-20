@@ -6,7 +6,8 @@
       "Bash(do sed:*)",
       "Bash(done)",
       "Bash(python _fix.py)",
-      "Bash(python -:*)"
+      "Bash(python -:*)",
+      "Bash(python _fix_adam.py)"
     ]
   }
 }

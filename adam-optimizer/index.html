@@ -439,6 +439,8 @@
   }
   /* Keep hero full-bleed with the padding */
   .hero { box-sizing: border-box; }
+  /* Sidebar collapse */
+  body.sidebar-collapsed { padding-right: 0 !important; }
 </style>
 </head>
 <body class="is-preload">
@@ -457,6 +459,8 @@
 		<ul>
 			<li><a href="../index.html">← Home</a></li>
 			<li><a href="#s0" class="active">Prerequisites</a></li>
+			<li><a href="#s1">Gradient Descent</a></li>
+			<li><a href="#s2">Momentum</a></li>
 			<li><a href="#s4">Adam</a></li>
 			<li><a href="#s6">Benchmark</a></li>
 		</ul>
@@ -470,12 +474,14 @@
 	</footer>
 </section>
 
+<button id="sidebar-toggle" aria-label="Toggle sidebar"><span class="toggle-arrow">&#10095;</span></button>
+
 <!-- ==================== HERO ==================== -->
 <header class="hero">
   <div class="hero-inner">
     <div class="hero-tag">Optimization / Deep Learning / From Scratch</div>
-    <h1>The Road to <span>Adam</span></h1>
-    <p>A visual, analogy-driven guide from plain gradient descent all the way to Adam, the optimizer that practically runs modern deep learning.</p>
+    <h1>Building <span>Adam</span> from Scratch</h1>
+    <p>From plain gradient descent to adaptive moment estimation. Each optimizer fixes one problem the previous had. The notebook benchmarks all three on XOR in plain NumPy.</p>
     <nav class="hero-nav">
       <a href="#s0">Prerequisites</a>
       <a href="#s1">Gradient Descent</a>
@@ -495,7 +501,7 @@
   <div class="section-tag tag-violet">00 - Before We Start</div>
   <h2>The Basics: Loss, Parameters, and Gradients</h2>
 
-  <p>Before we talk about any optimizer, we need three building blocks. If you already know these, skip ahead. If not, this section will make everything that follows click.</p>
+  <p>Before we talk about any optimizer, we need three building blocks. If you already know these, skip ahead. If not, this section sets up the foundation.</p>
 
   <h3>Parameters (θ)</h3>
   <p>A neural network is, at its core, a big pile of numbers. Weights, biases, thousands or millions of them. These numbers are the <strong>parameters</strong>, and we write them collectively as <strong>θ</strong> (the Greek letter theta). At the start of training, these parameters are random guesses. The entire point of training is to adjust them until the network does something useful.</p>
@@ -566,7 +572,7 @@
   <div class="analogy analogy-blue">
     <div class="analogy-label tag-blue">Analogy</div>
     <div class="analogy-title">The Blindfolded Hiker</div>
-    <p>Every step is the same fixed length. The hiker cannot look ahead to see if a cliff is coming or if the valley is just two inches away. All decisions are local, based only on the slope at the current position. This simplicity is both the strength and the weakness of vanilla gradient descent.</p>
+    <p>Every step is the same fixed length. The hiker cannot look ahead to see if a cliff is coming or if the valley is just two inches away. All decisions are local, based only on the slope at the current position. That simplicity is also the core problem with vanilla gradient descent.</p>
   </div>
 
   <h3>The update rule</h3>
@@ -770,7 +776,7 @@
   <div class="section-tag tag-blue">06 - Benchmark</div>
   <h2>Convergence on XOR: Adam vs SGD vs Momentum</h2>
 
-  <p>The notebook you uploaded trains a small two-layer neural network on the XOR problem using all three optimizers. Here is the convergence comparison from that experiment.</p>
+  <p>The notebook trains a two-layer network on XOR using all three optimizers. Below is the convergence comparison.</p>
 
   <div class="chart-wrapper">
     <div class="chart-label">Loss over 3,000 epochs</div>
@@ -824,7 +830,7 @@
   </div>
 
   <h3>When to use Adam</h3>
-  <p>Adam is where most people start, and it earns that position. It converges fast, adjusts step sizes per parameter automatically, and rarely blows up without warning. Pure SGD with a well-tuned schedule can edge it out on some large-scale vision tasks — there are published ImageNet results where that holds — but those experiments involve weeks of tuning the schedule. For anything involving language models, generative networks, or early-stage experiments, Adam is the practical choice. Start there, tune the learning rate, and move on.</p>
+  <p>Adam is the default starting point for most training runs, and it earns that. It converges fast, adjusts step sizes per parameter automatically, and rarely blows up without warning. Pure SGD with a well-tuned schedule can edge it out on some large-scale vision tasks — there are published ImageNet results where that holds — but those experiments involve weeks of tuning the schedule. For anything involving language models, generative networks, or early-stage experiments, Adam is the practical choice. Start there, tune the learning rate, and move on.</p>
 
   <div class="analogy analogy-green">
     <div class="analogy-label tag-green">Summary</div>
@@ -843,7 +849,14 @@
 
 <!-- Subscribe -->
 <div class="subscribe-box" style="margin-top: 1.5em; margin-bottom: 3em;">
-	<iframe src="https://subscribe-forms.beehiiv.com/86d93527-e185-4cf9-a336-036832e88eb0" class="beehiiv-embed" data-test-id="beehiiv-embed" frameborder="0" scrolling="no" style="width: 100%; height: 320px; margin: 0; border-radius: 0px !important; background-color: transparent; box-shadow: 0 0 #0000; max-width: 100%;"></iframe>
+	<form class="subscribe-form" action="https://app.beehiiv.com/subscribe/86d93527-e185-4cf9-a336-036832e88eb0" method="post" target="_blank">
+		<label class="subscribe-label" for="sub-email">drop your email &mdash; get notified when new posts land</label>
+		<div class="subscribe-row">
+			<input type="email" id="sub-email" name="email" placeholder="you@example.com" required autocomplete="email" />
+			<input type="submit" value="Subscribe &rarr;" />
+		</div>
+		<p class="subscribe-note">No spam. Unsubscribe anytime.</p>
+	</form>
 </div>
 
 </main>

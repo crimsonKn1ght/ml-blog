@@ -1013,6 +1013,10 @@ body.sidebar-collapsed #wrapper {
   padding-right: 0 !important;
 }
 
+body.sidebar-collapsed {
+  padding-right: 0 !important;
+}
+
 body.sidebar-collapsed #sidebar-toggle {
   right: 0;
 }
