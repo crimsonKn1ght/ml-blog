@@ -42,6 +42,8 @@
 			</footer>
 		</section>
 
+		<button id="sidebar-toggle" aria-label="Toggle sidebar"><span class="toggle-arrow">&#10095;</span></button>
+
 		<div id="wrapper">
 			<div id="main">
 				<section id="one">
@@ -98,8 +100,15 @@
 							<li><a href="../index.html" class="button">← Return Home</a></li>
 						</ul>
 						<!-- Subscribe -->
-						<div class="subscribe-box" style="margin-top: 2.5em;">
-							<iframe src="https://subscribe-forms.beehiiv.com/86d93527-e185-4cf9-a336-036832e88eb0" class="beehiiv-embed" data-test-id="beehiiv-embed" frameborder="0" scrolling="no" style="width: 100%; height: 320px; margin: 0; border-radius: 0px 0px 0px 0px !important; background-color: transparent; box-shadow: 0 0 #0000; max-width: 100%;"></iframe>
+						<div class="subscribe-box" style="margin-top: 1.5em; margin-bottom: 3em;">
+							<form class="subscribe-form" action="https://app.beehiiv.com/subscribe/86d93527-e185-4cf9-a336-036832e88eb0" method="post" target="_blank">
+								<label class="subscribe-label" for="sub-email">drop your email &mdash; get notified when new posts land</label>
+								<div class="subscribe-row">
+									<input type="email" id="sub-email" name="email" placeholder="you@example.com" required autocomplete="email" />
+									<input type="submit" value="Subscribe &rarr;" />
+								</div>
+								<p class="subscribe-note">No spam. Unsubscribe anytime.</p>
+							</form>
 						</div>
 					</div>
 				</section>
@@ -122,8 +131,5 @@
 		<script src="../assets/js/util.js"></script>
 		<script src="../assets/js/main.js"></script>
 		<script src="../assets/js/techguru.js"></script>
-
-		<script async src="https://subscribe-forms.beehiiv.com/embed.js"></script>
-	<script type="text/javascript" async src="https://subscribe-forms.beehiiv.com/attribution.js"></script>
 </body>
 </html>
