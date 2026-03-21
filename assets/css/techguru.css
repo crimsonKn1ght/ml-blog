@@ -979,31 +979,31 @@ hr {
 /* ── Sidebar Toggle Button ── */
 #sidebar-toggle {
   position: fixed;
-  right: 23em;
-  top: 1.6em;
+  right: calc(23em + 10px);
+  top: 50%;
+  transform: translateY(-50%);
   z-index: 200;
-  background: rgba(0, 212, 255, 0.10);
-  border: 1px solid rgba(0, 212, 255, 0.45);
-  border-right: none;
-  color: var(--accent-cyan);
-  width: 18px;
-  height: 44px;
+  background: rgba(13, 17, 27, 0.92);
+  border: 1px solid rgba(130, 110, 220, 0.55);
+  color: rgba(160, 140, 255, 0.85);
+  width: 22px;
+  height: 52px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  border-radius: 6px 0 0 6px;
+  border-radius: 8px;
   padding: 0;
   font-size: 0.65em;
   line-height: 1;
   transition: right 0.35s ease, background 0.2s, color 0.2s, border-color 0.2s;
   outline: none;
-  box-shadow: -3px 0 12px rgba(0, 212, 255, 0.08), -2px 0 6px rgba(0,0,0,0.5);
+  box-shadow: 0 2px 16px rgba(0,0,0,0.45);
 }
 
 #sidebar-toggle:hover {
-  background: rgba(0, 212, 255, 0.18);
-  border-color: rgba(0, 212, 255, 0.65);
+  background: rgba(130, 110, 220, 0.15);
+  border-color: rgba(160, 140, 255, 0.7);
   color: #fff;
 }
 
@@ -1026,7 +1026,7 @@ body.sidebar-collapsed {
 }
 
 body.sidebar-collapsed #sidebar-toggle {
-  right: 0;
+  right: 10px;
 }
 
 body.sidebar-collapsed .toggle-arrow {
