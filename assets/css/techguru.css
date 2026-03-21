@@ -977,6 +977,8 @@ hr {
 }
 
 /* ── Sidebar Toggle Button ── */
+/* NOTE: no font-size here — em in right: calc(23em+10px) must resolve
+   at the inherited body font-size (same context as #header width: 23em) */
 #sidebar-toggle {
   position: fixed;
   right: calc(23em + 10px);
@@ -994,7 +996,6 @@ hr {
   cursor: pointer;
   border-radius: 8px;
   padding: 0;
-  font-size: 0.65em;
   line-height: 1;
   transition: right 0.35s ease, background 0.2s, color 0.2s, border-color 0.2s;
   outline: none;
@@ -1008,6 +1009,7 @@ hr {
 }
 
 .toggle-arrow {
+  font-size: 0.65em;
   transition: transform 0.35s ease;
   display: inline-block;
   pointer-events: none;
@@ -1026,7 +1028,7 @@ body.sidebar-collapsed {
 }
 
 body.sidebar-collapsed #sidebar-toggle {
-  right: 10px;
+  right: 10px; /* sidebar gone, float near viewport right edge */
 }
 
 body.sidebar-collapsed .toggle-arrow {
