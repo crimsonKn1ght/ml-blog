@@ -977,11 +977,12 @@ hr {
 }
 
 /* ── Sidebar Toggle Button ── */
-/* NOTE: no font-size here — em in right: calc(23em+10px) must resolve
-   at the inherited body font-size (same context as #header width: 23em) */
+/* right is set in pixels by techguru.js (uses header.offsetWidth)
+   so there is no em/pt unit mismatch. CSS only holds the initial offscreen
+   fallback; JS overrides it immediately on DOMContentLoaded. */
 #sidebar-toggle {
   position: fixed;
-  right: calc(23em + 10px);
+  right: -60px; /* offscreen until JS syncs */
   top: 50%;
   transform: translateY(-50%);
   z-index: 200;
@@ -1027,9 +1028,7 @@ body.sidebar-collapsed {
   padding-right: 0 !important;
 }
 
-body.sidebar-collapsed #sidebar-toggle {
-  right: 10px; /* sidebar gone, float near viewport right edge */
-}
+/* collapsed position is also set by JS (GAP px from right edge) */
 
 body.sidebar-collapsed .toggle-arrow {
   transform: rotate(180deg);

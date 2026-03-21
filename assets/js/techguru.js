@@ -203,10 +203,30 @@
 
   /* ── 7. Sidebar Toggle ── */
   function initSidebarToggle() {
-    var btn = document.getElementById('sidebar-toggle');
-    if (!btn) return;
+    var btn    = document.getElementById('sidebar-toggle');
+    var header = document.getElementById('header');
+    if (!btn || !header) return;
+
+    /* Position the toggle button precisely at the sidebar's left edge.
+       Uses offsetWidth (actual rendered pixels) so no em/pt unit mismatch. */
+    var GAP = 10; // px gap between button right edge and sidebar left edge
+
+    function syncBtn() {
+      if (document.body.classList.contains('sidebar-collapsed')) {
+        btn.style.right = GAP + 'px';
+      } else {
+        btn.style.right = (header.offsetWidth + GAP) + 'px';
+      }
+    }
+
+    syncBtn();
+    window.addEventListener('resize', syncBtn);
+
     btn.addEventListener('click', function () {
+      var collapsing = !document.body.classList.contains('sidebar-collapsed');
       document.body.classList.toggle('sidebar-collapsed');
+      /* Set the target position immediately so the CSS transition animates to it */
+      btn.style.right = collapsing ? GAP + 'px' : (header.offsetWidth + GAP) + 'px';
     });
   }
 
