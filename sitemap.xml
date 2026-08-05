@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<url><loc>https://royml.dev/</loc><priority>1.0</priority></url>
+<url><loc>https://royml.dev/articles/</loc><priority>0.8</priority></url>
+<url><loc>https://royml.dev/articles/meta-stacking/</loc></url>
+<url><loc>https://royml.dev/articles/adversarial-validation/</loc></url>
+<url><loc>https://royml.dev/articles/time-series-forecasting/</loc></url>
+<url><loc>https://royml.dev/articles/catboost-polynomial/</loc></url>
+<url><loc>https://royml.dev/articles/k-means-clustering/</loc></url>
+<url><loc>https://royml.dev/articles/openai-cartpole/</loc></url>
+<url><loc>https://royml.dev/articles/vae-autoencoder/</loc></url>
+<url><loc>https://royml.dev/articles/decision-tree-classifier/</loc></url>
+<url><loc>https://royml.dev/articles/pca-from-scratch/</loc></url>
+<url><loc>https://royml.dev/articles/dbscan-from-scratch/</loc></url>
+<url><loc>https://royml.dev/articles/adam-optimizer/</loc></url>
+<url><loc>https://royml.dev/articles/backpropagation-from-scratch/</loc></url>
+</urlset>
