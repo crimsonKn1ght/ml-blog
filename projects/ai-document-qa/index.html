@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="AI-Powered Document Q&amp;A, an OCR-aware document assistant by Gourab Roy." />
+  <meta name="theme-color" content="#fbf7f9" />
+  <title>AI-Powered Document Q&amp;A &middot; Gourab Roy</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&amp;family=Source+Sans+3:wght@400;500;600;700&amp;display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../project.css" />
+</head>
+<body id="top" class="project-dqa">
+  <header class="mobile-header"><a href="/">Gourab Roy</a><a class="mobile-home" href="/">Home</a></header>
+  <div class="site-shell">
+    <aside class="sidebar">
+      <a class="wordmark" href="/">GR</a><h1>AI-Powered Document Q&amp;A</h1><p class="role">Multi-format parsing, OCR, and hybrid retrieval over your own files</p>
+      <nav aria-label="Project navigation"><a href="#question">Question</a><a href="#method">Method</a><a href="#config">Configuration</a><a href="#notes">Notes</a><a href="#reproduce">Reproduce</a></nav>
+      <div class="sidebar-links"><a href="/">Portfolio home</a><a href="https://github.com/crimsonKn1ght/docqnatool" target="_blank" rel="noreferrer">GitHub repository</a><a href="https://docqnatool.streamlit.app/" target="_blank" rel="noreferrer">Hosted demo</a></div>
+    </aside>
+    <main>
+      <header class="hero">
+        <p class="eyebrow">SOFTWARE PROJECT</p><h2>A document assistant that also handles scanned pages</h2>
+        <p class="lede">I built this as a Streamlit app for asking questions about PDF, DOCX, and TXT files, including pages that are really just embedded images of text. Uploaded content is OCR'd where needed, indexed with FAISS, and answered by a Groq-hosted Llama 3.3 70B model using only the retrieved passages.</p>
+        <div class="hero-links"><a class="button primary" href="https://github.com/crimsonKn1ght/docqnatool" target="_blank" rel="noreferrer">Read the code</a><a class="button" href="https://docqnatool.streamlit.app/" target="_blank" rel="noreferrer">Try the hosted app</a></div>
+        <dl class="facts"><div><dt>Formats</dt><dd>PDF, DOCX, TXT</dd></div><div><dt>OCR</dt><dd>Tesseract</dd></div><div><dt>Index</dt><dd>FAISS</dd></div><div><dt>Answering model</dt><dd>Llama 3.3 70B via Groq</dd></div></dl>
+      </header>
+
+      <section id="question">
+        <p class="eyebrow">THE QUESTION</p><h2>Not every PDF is really text</h2>
+        <div class="prose"><p>A lot of the documents people actually want answers from, scanned contracts, printed forms, older reports, are images of text rather than text itself. A Q&amp;A tool that only reads the text layer of a PDF silently fails on those files. I wanted one tool that handles both cases, with OCR available when it is needed and skipped when it is not.</p></div>
+      </section>
+
+      <section id="method">
+        <p class="eyebrow">METHOD</p><h2>Ingest, index, retrieve, answer</h2>
+        <ol class="steps"><li><span>01</span><div><h3>Parse and OCR</h3><p>Uploaded PDF, DOCX, and TXT files are parsed for text. Tesseract OCR can be toggled on to extract text from scanned images embedded in a document, and duplicate uploads are caught with an MD5 hash check.</p></div></li><li><span>02</span><div><h3>Chunk and embed</h3><p>Extracted text is split into overlapping chunks and embedded with a TF-IDF vectorizer.</p></div></li><li><span>03</span><div><h3>Index and retrieve</h3><p>Chunk vectors go into a FAISS index. Each question is embedded the same way and matched against the index for its closest chunks.</p></div></li><li><span>04</span><div><h3>Answer from context</h3><p>The retrieved chunks are passed as context to <code>llama-3.3-70b-versatile</code> on Groq, which answers grounded in that context inside a chat-style interface.</p></div></li></ol>
+      </section>
+
+      <section id="config">
+        <p class="eyebrow">DEFAULT CONFIGURATION</p><h2>Tunable constants</h2>
+        <div class="defaults"><div><span>Chunk size</span><strong>1,000 characters</strong></div><div><span>Overlap</span><strong>200 characters</strong></div><div><span>Retrieved</span><strong>Top 5 chunks</strong></div><div><span>Temperature</span><strong>0</strong></div></div>
+      </section>
+
+      <section id="notes">
+        <p class="eyebrow">A DELIBERATE CHOICE</p><h2>TF-IDF instead of a neural embedding model</h2>
+        <div class="note"><h3>Lexical embeddings keep the tool lightweight</h3><p>Chunk embedding uses TF-IDF rather than a neural sentence embedding model. That keeps the app dependency-light and fast to run without a GPU, at the cost of missing some of the semantic matching a neural embedder would catch. It is a deliberate trade-off for a tool meant to run comfortably on a small deployment.</p></div>
+      </section>
+
+      <section id="reproduce">
+        <p class="eyebrow">REPRODUCE</p><h2>Run it yourself</h2>
+        <div class="resource-list"><a href="https://github.com/crimsonKn1ght/docqnatool" target="_blank" rel="noreferrer"><span><strong>Implementation</strong><small>Parsing, OCR, FAISS indexing, and the Streamlit UI</small></span><b>GitHub</b></a><a href="https://docqnatool.streamlit.app/" target="_blank" rel="noreferrer"><span><strong>Hosted app</strong><small>Try it without a local install</small></span><b>Streamlit</b></a></div>
+        <div class="command"><span>Run locally</span><code>pip install -r requirements.txt
+export GROQ_API_KEY=your_key_here
+streamlit run app.py</code></div>
+        <p class="source-note">Tesseract OCR must be installed on the host system separately; see <code>packages.txt</code> for the Debian and Ubuntu package list.</p>
+      </section>
+      <footer><span>&copy; <span id="year"></span> Gourab Roy</span><a href="#top">Back to top</a></footer>
+    </main>
+  </div>
+  <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+</body>
+</html>
