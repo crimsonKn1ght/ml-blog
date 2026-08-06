@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Scalable RAG System, a hybrid retrieval system by Gourab Roy." />
+  <meta name="theme-color" content="#f6fbfa" />
+  <title>Scalable RAG System &middot; Gourab Roy</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&amp;family=Source+Sans+3:wght@400;500;600;700&amp;display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../project.css" />
+</head>
+<body id="top" class="project-rag">
+  <header class="mobile-header"><a href="/">Gourab Roy</a><a class="mobile-home" href="/">Home</a></header>
+  <div class="site-shell">
+    <aside class="sidebar">
+      <a class="wordmark" href="/">GR</a><h1>Scalable RAG System</h1><p class="role">Hybrid retrieval with reranking, deduplication, and index routing</p>
+      <nav aria-label="Project navigation"><a href="#question">Question</a><a href="#method">Method</a><a href="#notes">Notes</a><a href="#reproduce">Resources</a></nav>
+      <div class="sidebar-links"><a href="/">Portfolio home</a><a href="https://github.com/crimsonKn1ght" target="_blank" rel="noreferrer">GitHub profile</a></div>
+    </aside>
+    <main>
+      <header class="hero">
+        <p class="eyebrow">SOFTWARE PROJECT</p><h2>A retrieval layer built for more than one index</h2>
+        <p class="lede">This is a hybrid retrieval system that pairs sparse and dense search, reranks candidates with an SBERT-based semantic model, removes near-duplicate vectors before they reach the reader, and routes a query to the right index when more than one collection is available.</p>
+        <div class="hero-links"><a class="button primary" href="https://github.com/crimsonKn1ght" target="_blank" rel="noreferrer">View on GitHub</a></div>
+        <dl class="facts"><div><dt>Retrieval</dt><dd>Hybrid search</dd></div><div><dt>Reranking</dt><dd>SBERT semantic model</dd></div><div><dt>Housekeeping</dt><dd>Vector deduplication</dd></div><div><dt>Scale</dt><dd>Multi-index routing</dd></div></dl>
+      </header>
+
+      <section id="question">
+        <p class="eyebrow">THE QUESTION</p><h2>A single index does not stay clean or fast forever</h2>
+        <div class="prose"><p>A retrieval-augmented pipeline built around one vector index tends to run into the same problems as it grows: keyword-only or embedding-only search each miss cases the other would catch, near-duplicate chunks crowd out genuinely different results, and a single flat index becomes an awkward fit once the underlying content covers more than one domain.</p><p>I built this system to address those three problems together rather than patching them one at a time.</p></div>
+      </section>
+
+      <section id="method">
+        <p class="eyebrow">METHOD</p><h2>Retrieve, dedupe, rerank, route</h2>
+        <ol class="steps"><li><span>01</span><div><h3>Hybrid retrieval</h3><p>Sparse keyword search and dense embedding search run side by side, and their candidate sets are combined so neither approach alone caps recall.</p></div></li><li><span>02</span><div><h3>Vector deduplication</h3><p>Near-duplicate chunks are collapsed before ranking, so the same passage does not occupy several of the returned slots.</p></div></li><li><span>03</span><div><h3>Semantic reranking</h3><p>An SBERT-based model reorders the surviving candidates by semantic relevance to the query, ahead of the initial retrieval score.</p></div></li><li><span>04</span><div><h3>Index routing</h3><p>A routing step decides which index, or indexes, a query should be sent to when the underlying content spans multiple collections.</p></div></li></ol>
+      </section>
+
+      <section id="notes">
+        <p class="eyebrow">SCOPE</p><h2>What is public today</h2>
+        <div class="note"><h3>Not yet split into its own public repository</h3><p>This project currently lives alongside other retrieval work under my GitHub account rather than as a single standalone repository. I plan to extract it once the routing layer is stable enough to publish on its own.</p></div>
+      </section>
+
+      <section id="reproduce">
+        <p class="eyebrow">RESOURCES</p><h2>Where to look</h2>
+        <div class="resource-list"><a href="https://github.com/crimsonKn1ght" target="_blank" rel="noreferrer"><span><strong>Related retrieval work</strong><small>Hybrid and RAG experiments under my GitHub account</small></span><b>GitHub</b></a></div>
+      </section>
+      <footer><span>&copy; <span id="year"></span> Gourab Roy</span><a href="#top">Back to top</a></footer>
+    </main>
+  </div>
+  <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+</body>
+</html>

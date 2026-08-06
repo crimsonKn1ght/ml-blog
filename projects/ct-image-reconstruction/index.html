@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="A two stage CT reconstruction implementation by Gourab Roy." />
+  <meta name="theme-color" content="#fcf9f8" />
+  <title>CT image reconstruction · Gourab Roy</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&amp;family=Source+Sans+3:wght@400;500;600;700&amp;display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../project.css" />
+</head>
+<body id="top" class="project-ct">
+  <header class="mobile-header"><a href="/">Gourab Roy</a><a class="mobile-home" href="/">Home</a></header>
+  <div class="site-shell">
+    <aside class="sidebar">
+      <a class="wordmark" href="/">GR</a><h1>CT reconstruction</h1><p class="role">A two stage implementation for mapping sinograms to CT images</p>
+      <nav aria-label="Project navigation"><a href="#purpose">Purpose</a><a href="#method">Method</a><a href="#data">Data</a><a href="#evidence">Evidence</a><a href="#run">Run</a></nav>
+      <div class="sidebar-links"><a href="/">Portfolio home</a><a href="https://github.com/crimsonKn1ght/ct_scan_reconstruction" target="_blank" rel="noreferrer">GitHub repository</a></div>
+    </aside>
+    <main>
+      <header class="hero">
+        <p class="eyebrow">RESEARCH IMPLEMENTATION</p><h2>Reconstructing CT images with global and local refinement stages</h2>
+        <p class="lede">I implemented a pipeline that maps a sinogram directly to an image. A Swin based first stage produces the reconstruction, and a smaller U Net performs a second image refinement step.</p>
+        <div class="hero-links"><a class="button primary" href="https://github.com/crimsonKn1ght/ct_scan_reconstruction" target="_blank" rel="noreferrer">Read the code</a><a class="text-link" href="#run">See the training entry point</a></div>
+        <dl class="facts"><div><dt>Input</dt><dd>Sinogram</dd></div><div><dt>Target</dt><dd>CT image</dd></div><div><dt>Dataset format</dt><dd>LoDoPaB style HDF5</dd></div><div><dt>Recorded measures</dt><dd>SSIM, PSNR, MAE</dd></div></dl>
+      </header>
+
+      <section id="purpose">
+        <p class="eyebrow">PURPOSE</p><h2>Separate the first reconstruction from image refinement</h2>
+        <div class="prose"><p>The repository is an implementation study of direct sinogram to image reconstruction. I split the task into two learned stages so the first network can form the main image and the second can work on its residual visual detail.</p><p>The design supports paired training, validation, and test data. It also saves predictions in their denormalized image scale for later inspection.</p></div>
+      </section>
+
+      <section id="method">
+        <p class="eyebrow">METHOD</p><h2>The implemented path</h2>
+        <div class="flow-grid"><article><span>01</span><strong>Frequency filter</strong><p>An optional Ramp or Hann filter is applied along the detector axis of the sinogram.</p></article><article><span>02</span><strong>Swin reconstruction</strong><p>A Swin Transformer encoder and convolutional decoder produce the first image.</p></article><article><span>03</span><strong>U Net refinement</strong><p>A separate convolutional U Net receives the first image and predicts a refined output.</p></article><article><span>04</span><strong>Evaluate and save</strong><p>The pipeline records image measures and writes denormalized NumPy predictions.</p></article></div>
+        <div class="comparison"><article><span class="comparison-label">Stage 1</span><strong>Global reconstruction</strong><p>The Swin model handles the direct mapping from filtered projection data to image space.</p></article><div class="comparison-mark" aria-hidden="true">then</div><article class="compact-card"><span class="comparison-label">Stage 2</span><strong>Local refinement</strong><p>The refiner processes the first output with an image to image U Net.</p></article></div>
+      </section>
+
+      <section id="data">
+        <p class="eyebrow">DATA AND OBJECTIVE</p><h2>Paired HDF5 input with image based losses</h2>
+        <div class="prose"><p>The loader expects matching observation and ground truth HDF5 files for the training, validation, and test splits. Each file contains a dataset named `data`.</p><p>Inputs are padded to a Swin compatible shape and cropped back to the original image size. The training objective combines an SSIM loss term with mean absolute error. Both reconstruction stages contribute to the complete loss.</p></div>
+        <div class="defaults"><div><span>Structure</span><strong>Paired files</strong></div><div><span>Stage 1 encoder</span><strong>Swin Transformer</strong></div><div><span>Stage 2 model</span><strong>Refiner U Net</strong></div><div><span>Parallel training</span><strong>DataParallel</strong></div></div>
+      </section>
+
+      <section id="evidence">
+        <p class="eyebrow">CURRENT EVIDENCE</p><h2>Implementation available, result table pending</h2>
+        <div class="note"><h3>No public checkpoint or numerical benchmark is included</h3><p>The repository contains the training, inference, and evaluation code. It does not currently publish trained weights, saved prediction examples, or a completed SSIM, PSNR, and MAE result table.</p></div>
+        <ul class="plain-list"><li><strong>Recorded during training</strong><p>Training and validation loss, SSIM, PSNR, and MAE are written to a CSV log.</p></li><li><strong>Computed during testing</strong><p>The evaluation function loads a saved two stage checkpoint and reports mean SSIM, PSNR, MAE, and combined loss.</p></li><li><strong>Claims intentionally avoided</strong><p>The page does not claim clinical validation, improved image quality, or better performance than a reconstruction baseline.</p></li></ul>
+      </section>
+
+      <section id="run">
+        <p class="eyebrow">RUN THE PIPELINE</p><h2>Expected data and entry point</h2>
+        <div class="prose"><p>Place paired observation and ground truth files under one root directory using the LoDoPaB style split names described in the repository README.</p></div>
+        <div class="code-block"><code>pip install torch torchvision timm pytorch-msssim h5py tqdm numpy
+
+python main.py \
+  --root_dir /path/to/LoDoPaB \
+  --save_path /path/to/model.pth \
+  --log_path /path/to/training.csv \
+  --output_dir /path/to/predictions</code></div>
+        <div class="resource-list"><a href="https://github.com/crimsonKn1ght/ct_scan_reconstruction" target="_blank" rel="noreferrer"><span><strong>Implementation</strong><small>Data loader, filters, models, training, inference, and evaluation</small></span><b>GitHub</b></a></div>
+      </section>
+      <footer><span>&copy; <span id="year"></span> Gourab Roy</span><a href="#top">Back to top</a></footer>
+    </main>
+  </div>
+  <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+</body>
+</html>

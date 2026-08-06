@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Compact CLAD, an efficient action diffusion project by Gourab Roy." />
+  <meta name="theme-color" content="#f7f5ef" />
+  <title>Compact CLAD · Gourab Roy</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&amp;family=Source+Sans+3:wght@400;500;600;700&amp;display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../project.css" />
+</head>
+<body id="top" class="project-clad">
+  <header class="mobile-header"><a href="/">Gourab Roy</a><a class="mobile-home" href="/">Home</a></header>
+  <div class="site-shell">
+    <aside class="sidebar">
+      <a class="wordmark" href="/">GR</a>
+      <h1>Compact CLAD</h1>
+      <p class="role">Procedure planning with a smaller diffusion state</p>
+      <nav aria-label="Project navigation">
+        <a href="#question">Question</a><a href="#method">Method</a><a href="#results">Results</a><a href="#notes">Notes</a><a href="#reproduce">Reproduce</a>
+      </nav>
+      <div class="sidebar-links">
+        <a href="/">Portfolio home</a>
+        <a href="https://github.com/crimsonKn1ght/clad-repo" target="_blank" rel="noreferrer">GitHub repository</a>
+        <a href="https://huggingface.co/grKnight/compact-clad" target="_blank" rel="noreferrer">Model and artifacts</a>
+      </div>
+    </aside>
+
+    <main>
+      <header class="hero">
+        <p class="eyebrow">RESEARCH PROJECT · 2026</p>
+        <h2>A lighter CLAD formulation for vision language procedure planning</h2>
+        <p class="lede">I reproduced CLAD and used it as the starting point for a lighter formulation. Compact CLAD performs diffusion on the action plan while supplying the observations, task identity, and endpoint latents as context.</p>
+        <div class="hero-links">
+          <a class="button primary" href="https://github.com/crimsonKn1ght/clad-repo" target="_blank" rel="noreferrer">Read the code</a>
+          <a class="button" href="https://huggingface.co/grKnight/compact-clad" target="_blank" rel="noreferrer">View model and artifacts</a>
+          <a class="text-link" href="https://arxiv.org/abs/2503.06637" target="_blank" rel="noreferrer">Original CLAD paper</a>
+        </div>
+        <dl class="facts">
+          <div><dt>Datasets</dt><dd>NIV and CrossTask</dd></div><div><dt>Horizon</dt><dd>3 actions</dd></div><div><dt>Evaluation</dt><dd>5 inference seeds</dd></div><div><dt>Planner size</dt><dd>About 1.08M parameters</dd></div>
+        </dl>
+      </header>
+
+      <section id="question">
+        <p class="eyebrow">THE QUESTION</p>
+        <h2>Can the diffusion state be made smaller?</h2>
+        <div class="prose">
+          <p>CLAD combines task, action, and observation features into one noisy tensor. The visual feature alone has 1,536 values, and it is repeated at every point in a short plan.</p>
+          <p>I explored whether the model could retain endpoint conditioning while using a smaller noisy state. My version keeps the two stage structure and asks the denoiser to generate only the action grid.</p>
+        </div>
+        <div class="comparison" aria-label="Diffusion state comparison">
+          <article><span class="comparison-label">Original CLAD</span><strong>Task + action + observation</strong><p>All three components are part of the noisy state at every step.</p></article>
+          <div class="comparison-mark" aria-hidden="true">to</div>
+          <article class="compact-card"><span class="comparison-label">Compact CLAD</span><strong>Action grid</strong><p>Task, observations, and endpoint latents move into the condition encoder.</p></article>
+        </div>
+        <div class="reduction-grid"><div><span>NIV</span><strong>97.0%</strong><small>less state width</small></div><div><span>CrossTask</span><strong>93.7%</strong><small>less state width</small></div><div><span>COIN</span><strong>68.8%</strong><small>less state width</small></div></div>
+      </section>
+
+      <section id="method">
+        <p class="eyebrow">METHOD</p><h2>The pipeline I trained</h2>
+        <ol class="steps">
+          <li><span>01</span><div><h3>Learn the endpoints</h3><p>A normalized VAE learns representations of the start and goal action observation pairs. The decoder uses signed output MSE because these features are real valued.</p></div></li>
+          <li><span>02</span><div><h3>Build the context</h3><p>The condition encoder combines the start observation, goal observation, task class, and two VAE latents.</p></div></li>
+          <li><span>03</span><div><h3>Denoise the actions</h3><p>A small temporal U Net predicts the clean action grid. Training uses a cosine noise schedule and gives extra weight to the two endpoints. Inference uses ten DDIM steps.</p></div></li>
+        </ol>
+      </section>
+
+      <section id="results">
+        <p class="eyebrow">RESULTS</p>
+        <div class="section-heading"><h2>Completed horizon 3 runs</h2><p>Mean over seeds 0 through 4</p></div>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Dataset</th><th>Acc@1</th><th>Acc@5</th><th>Success</th><th>mIoU1</th><th>mIoU2</th></tr></thead>
+          <tbody><tr><th>NIV</th><td>53.70</td><td>81.16</td><td>33.63</td><td>79.45</td><td>62.66</td></tr><tr><th>CrossTask</th><td>63.11</td><td>84.97</td><td>30.44</td><td>51.05</td><td>60.60</td></tr></tbody>
+        </table></div>
+        <div class="run-details">
+          <article><span>NIV</span><strong>Epoch 125</strong><p>1,079,536 planner parameters<br />Best VAE validation ELBO: 597.9396</p></article>
+          <article><span>CrossTask</span><strong>Epoch 80</strong><p>1,087,721 planner parameters<br />Best VAE validation ELBO: 617.4352</p></article>
+        </div>
+      </section>
+
+      <section id="notes">
+        <p class="eyebrow">READING THE RESULTS</p><h2>What these numbers do and do not show</h2>
+        <div class="note"><h3>NIV has a validation caveat</h3><p>The event class enriched official NIV test manifest was also used for validation and model selection. I treat the NIV figures as a record of the completed engineering experiment, not as an untouched test estimate.</p></div>
+        <div class="prose">
+          <p>The CrossTask values come from the saved five seed test run. I am not claiming a new state of the art result. The useful finding is narrower: the action focused formulation trains, produces usable plans, and reduces the diffusion state substantially.</p>
+          <p>I saved the checkpoints, configurations, logs, TensorBoard events, inference outputs, and SHA 256 manifest so the experiment can be inspected rather than taken on trust.</p>
+        </div>
+      </section>
+
+      <section id="reproduce">
+        <p class="eyebrow">REPRODUCE</p><h2>Code and evidence</h2>
+        <div class="resource-list">
+          <a href="https://github.com/crimsonKn1ght/clad-repo" target="_blank" rel="noreferrer"><span><strong>Implementation</strong><small>Training, inference, tests, and documentation</small></span><b>GitHub</b></a>
+          <a href="https://huggingface.co/grKnight/compact-clad" target="_blank" rel="noreferrer"><span><strong>Model and experiment archive</strong><small>Checkpoints, logs, outputs, and checksums</small></span><b>Hugging Face</b></a>
+          <a href="https://arxiv.org/abs/2503.06637" target="_blank" rel="noreferrer"><span><strong>CLAD paper</strong><small>The method that this project reproduces and extends</small></span><b>arXiv</b></a>
+        </div>
+        <div class="command"><span>Run the test suite</span><code>python -m unittest discover -s tests -v</code></div>
+      </section>
+
+      <footer><span>&copy; <span id="year"></span> Gourab Roy</span><a href="#top">Back to top</a></footer>
+    </main>
+  </div>
+  <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+</body>
+</html>

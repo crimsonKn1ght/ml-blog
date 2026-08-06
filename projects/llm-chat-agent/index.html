@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="LLM Chat Agent, a streaming conversational AI application by Gourab Roy." />
+  <meta name="theme-color" content="#f8f9fd" />
+  <title>LLM Chat Agent &middot; Gourab Roy</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&amp;family=Source+Sans+3:wght@400;500;600;700&amp;display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../project.css" />
+</head>
+<body id="top" class="project-llm">
+  <header class="mobile-header"><a href="/">Gourab Roy</a><a class="mobile-home" href="/">Home</a></header>
+  <div class="site-shell">
+    <aside class="sidebar">
+      <a class="wordmark" href="/">GR</a><h1>LLM Chat Agent</h1><p class="role">A streaming chat agent with query routing and resumable sessions</p>
+      <nav aria-label="Project navigation"><a href="#question">Question</a><a href="#method">Method</a><a href="#streaming">Streaming</a><a href="#notes">Notes</a><a href="#reproduce">Reproduce</a></nav>
+      <div class="sidebar-links"><a href="/">Portfolio home</a><a href="https://github.com/crimsonKn1ght/llm-app-agent-data-science_v1" target="_blank" rel="noreferrer">Backend repository</a><a href="https://github.com/crimsonKn1ght/llm-app-agent-frontend_v1" target="_blank" rel="noreferrer">Frontend repository</a></div>
+    </aside>
+    <main>
+      <header class="hero">
+        <p class="eyebrow">SOFTWARE PROJECT &middot; 2026</p><h2>A chat agent that classifies, decomposes, and streams its own reasoning</h2>
+        <p class="lede">I built a two-part chat application: a FastAPI and LangGraph backend that plans how to answer a question, and a React and TypeScript frontend that renders the answer as it streams in. Questions that mix several intents are split into sub-queries and routed through parallel graph branches instead of one long call.</p>
+        <div class="hero-links"><a class="button primary" href="https://github.com/crimsonKn1ght/llm-app-agent-data-science_v1" target="_blank" rel="noreferrer">Read the backend code</a><a class="button" href="https://github.com/crimsonKn1ght/llm-app-agent-frontend_v1" target="_blank" rel="noreferrer">Read the frontend code</a></div>
+        <dl class="facts"><div><dt>Backend</dt><dd>FastAPI + LangGraph</dd></div><div><dt>Frontend</dt><dd>React + TypeScript + Vite</dd></div><div><dt>Model</dt><dd>Anthropic Claude</dd></div><div><dt>Transport</dt><dd>NDJSON streaming</dd></div></dl>
+      </header>
+
+      <section id="question">
+        <p class="eyebrow">THE QUESTION</p><h2>One question can hide several intents</h2>
+        <div class="prose"><p>A user question can be a quick factual lookup, a request for structured analysis, or a mix of both stitched into one sentence. I wanted the backend to recognize that split automatically, answer each part with the node built for it, and still return one coherent response, rather than forcing every request through a single generic answering path.</p><p>I also wanted the UI to stay responsive during a multi-step answer, so the client shows progress as the graph works instead of a blank screen until the final text arrives.</p></div>
+      </section>
+
+      <section id="method">
+        <p class="eyebrow">METHOD</p><h2>Classify, decompose, then route</h2>
+        <ol class="steps"><li><span>01</span><div><h3>Classify and decompose</h3><p>A query analyzer node classifies the question as insights or analytical, and breaks compound questions into up to three sub-queries.</p></div></li><li><span>02</span><div><h3>Route through the graph</h3><p>Single-purpose questions go to one LangGraph node. Mixed questions are routed through parallel branches so each sub-query reaches the node built to answer it.</p></div></li><li><span>03</span><div><h3>Optional web search</h3><p>When a request sets <code>web_search=true</code>, a search step runs before the answering node, giving the model outside context for that turn.</p></div></li><li><span>04</span><div><h3>Synthesize</h3><p>A summary node assembles the branch outputs into one final response before it is streamed back to the client.</p></div></li></ol>
+      </section>
+
+      <section id="streaming">
+        <p class="eyebrow">STREAMING AND MEMORY</p><h2>NDJSON events and compressed history</h2>
+        <div class="prose"><p>The chat endpoint returns <code>application/x-ndjson</code>: one JSON object per line, typed as <code>progress</code>, <code>text</code>, <code>error</code>, or <code>final_response</code>. The React frontend consumes this stream incrementally, so partial answer text and status updates appear as the graph produces them rather than all at once.</p><p>Conversation history is saved to disk per session and reloaded by conversation ID, which is what makes a session resumable. Once a conversation passes 20 messages, older turns are compressed into a summary and the 10 most recent messages are kept in full.</p></div>
+      </section>
+
+      <section id="notes">
+        <p class="eyebrow">SCOPE</p><h2>What this project is, and is not</h2>
+        <div class="note"><h3>This is not a retrieval-augmented system</h3><p>There is no vector database, embedding index, or document chunk retrieval in the current backend. The only path to outside information is the optional web search step, which is scoped per request rather than always on.</p></div>
+      </section>
+
+      <section id="reproduce">
+        <p class="eyebrow">REPRODUCE</p><h2>Running both halves locally</h2>
+        <div class="resource-list"><a href="https://github.com/crimsonKn1ght/llm-app-agent-data-science_v1" target="_blank" rel="noreferrer"><span><strong>Backend</strong><small>FastAPI service, LangGraph nodes, and streaming routes</small></span><b>GitHub</b></a><a href="https://github.com/crimsonKn1ght/llm-app-agent-frontend_v1" target="_blank" rel="noreferrer"><span><strong>Frontend</strong><small>React and TypeScript chat client with markdown rendering</small></span><b>GitHub</b></a></div>
+        <div class="command"><span>Start the backend</span><code>pip install -r requirements.txt
+python run.py</code></div>
+        <p class="source-note">The backend listens on port 8000 by default. Point the frontend's API base URL there and allow its origin under <code>URL_ALLOWED_ORIGINS</code>.</p>
+      </section>
+      <footer><span>&copy; <span id="year"></span> Gourab Roy</span><a href="#top">Back to top</a></footer>
+    </main>
+  </div>
+  <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+</body>
+</html>

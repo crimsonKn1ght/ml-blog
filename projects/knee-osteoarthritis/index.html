@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Knee osteoarthritis detection and categorization, a published deep learning study by Gourab Roy." />
+  <meta name="theme-color" content="#f7f9fb" />
+  <title>Knee osteoarthritis detection and categorization &middot; Gourab Roy</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&amp;family=Source+Sans+3:wght@400;500;600;700&amp;display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../project.css" />
+</head>
+<body id="top" class="project-oa">
+  <header class="mobile-header"><a href="/">Gourab Roy</a><a class="mobile-home" href="/">Home</a></header>
+  <div class="site-shell">
+    <aside class="sidebar">
+      <a class="wordmark" href="/">GR</a><h1>Knee osteoarthritis detection</h1><p class="role">Grading knee X-rays on the Kellgren-Lawrence scale with an attention U-Net</p>
+      <nav aria-label="Project navigation"><a href="#question">Question</a><a href="#method">Method</a><a href="#results">Results</a><a href="#notes">Notes</a><a href="#reproduce">Reproduce</a></nav>
+      <div class="sidebar-links"><a href="/">Portfolio home</a><a href="https://github.com/crimsonKn1ght/Code-OA-detection-model" target="_blank" rel="noreferrer">GitHub repository</a><a href="https://doi.org/10.1007/978-981-96-9239-2_9" target="_blank" rel="noreferrer">Published paper</a></div>
+    </aside>
+    <main>
+      <header class="hero">
+        <p class="eyebrow">PUBLISHED PAPER &middot; ISAI 2025</p><h2>Automating knee osteoarthritis grading from X-rays</h2>
+        <p class="lede">With Arup Kumar Pal, Manish Raj, and Jitesh Pradhan, I built a deep learning model that reads a knee X-ray and predicts its Kellgren-Lawrence grade, the scale radiologists use to describe how far osteoarthritis has progressed. The paper received the Best Paper Award at ISAI 2025 and is published by Springer in the Lecture Notes in Networks and Systems series.</p>
+        <div class="hero-links"><a class="button primary" href="https://doi.org/10.1007/978-981-96-9239-2_9" target="_blank" rel="noreferrer">Read the paper</a><a class="button" href="https://github.com/crimsonKn1ght/Code-OA-detection-model" target="_blank" rel="noreferrer">Read the code</a></div>
+        <dl class="facts"><div><dt>Grading scale</dt><dd>Kellgren-Lawrence</dd></div><div><dt>Backbone</dt><dd>Modified Double U-Net</dd></div><div><dt>Attention</dt><dd>CBAM</dd></div><div><dt>Training accuracy</dt><dd>98 percent</dd></div></dl>
+      </header>
+
+      <section id="question">
+        <p class="eyebrow">THE QUESTION</p><h2>Can grading be automated without losing reliability?</h2>
+        <div class="prose"><p>Knee osteoarthritis is usually staged by a radiologist reading joint space narrowing, osteophyte growth, and other changes to bone and cartilage on an X-ray, then assigning a Kellgren-Lawrence grade. That reading takes time and depends on the reader, so two radiologists can reasonably disagree on a borderline case.</p><p>We wanted a model that could take a graded X-ray dataset and learn to reproduce that grading directly, so the diagnostic step could be automated and made faster without adding a second, separate detection stage.</p></div>
+      </section>
+
+      <section id="method">
+        <p class="eyebrow">METHOD</p><h2>A hierarchical U-Net with attention</h2>
+        <ol class="steps"><li><span>01</span><div><h3>Double U-Net backbone</h3><p>The model uses a modified Double U-Net, a hierarchical encoder-decoder pair, to extract features from the X-ray at multiple resolutions.</p></div></li><li><span>02</span><div><h3>CBAM attention</h3><p>A Convolutional Block Attention Module sits on top of the backbone. It reweights channels and spatial regions so the network can focus on the joint areas where osteoarthritis actually shows.</p></div></li><li><span>03</span><div><h3>Grade classification</h3><p>The attended features feed a classification head that outputs the predicted Kellgren-Lawrence grade for the scan.</p></div></li></ol>
+      </section>
+
+      <section id="results">
+        <p class="eyebrow">RESULTS</p><h2>Training and validation accuracy</h2>
+        <div class="reduction-grid"><div><span>Training</span><strong>98%</strong><small>classification accuracy</small></div><div><span>Validation</span><strong>80%</strong><small>classification accuracy</small></div><div><span>Venue</span><strong>ISAI 2025</strong><small>Best Paper Award</small></div></div>
+      </section>
+
+      <section id="notes">
+        <p class="eyebrow">READING THE RESULTS</p><h2>The training and validation gap is worth noting</h2>
+        <div class="note"><h3>Eighteen points separate training and validation accuracy</h3><p>That gap is a normal sign that the model fits the training set more closely than it generalizes to unseen scans. The paper reports this validation number as an honest measure of current performance, not a ceiling, and treats further generalization work as the natural next step.</p></div>
+        <div class="prose"><p>The result was obtained on the datasets available to us at the time. It is not a claim of clinical readiness, and the model has not been evaluated against an external, out of hospital cohort.</p></div>
+      </section>
+
+      <section id="reproduce">
+        <p class="eyebrow">REPRODUCE</p><h2>Code, container, and citation</h2>
+        <div class="resource-list"><a href="https://github.com/crimsonKn1ght/Code-OA-detection-model" target="_blank" rel="noreferrer"><span><strong>Implementation</strong><small>Model, training configuration, and Docker setup</small></span><b>GitHub</b></a><a href="https://doi.org/10.1007/978-981-96-9239-2_9" target="_blank" rel="noreferrer"><span><strong>Knee osteoarthritis detection and categorization with deep learning models</strong><small>Roy, Pal, Raj, Pradhan &middot; ISAI 2025 &middot; Springer LNNS</small></span><b>Paper</b></a></div>
+        <div class="command"><span>Build and run the container</span><code>docker build -t myapp-image .
+docker run --gpus all --name my_container -v /path/to/dataset:/app/dataset -it myapp-image</code></div>
+        <p class="source-note">Dataset variables are set in <code>config.py</code> before the image is built. Drop <code>--gpus all</code> to run on CPU.</p>
+      </section>
+      <footer><span>&copy; <span id="year"></span> Gourab Roy</span><a href="#top">Back to top</a></footer>
+    </main>
+  </div>
+  <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+</body>
+</html>

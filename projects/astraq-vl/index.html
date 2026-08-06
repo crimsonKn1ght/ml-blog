@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="AstraQ VL, an astronomy vision language model project by Gourab Roy." />
+  <meta name="theme-color" content="#fbf9fd" />
+  <title>AstraQ VL · Gourab Roy</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&amp;family=Source+Sans+3:wght@400;500;600;700&amp;display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../project.css" />
+</head>
+<body id="top" class="project-astra">
+  <header class="mobile-header"><a href="/">Gourab Roy</a><a class="mobile-home" href="/">Home</a></header>
+  <div class="site-shell">
+    <aside class="sidebar">
+      <a class="wordmark" href="/">GR</a>
+      <h1>AstraQ VL</h1>
+      <p class="role">Parameter focused training for astronomy visual question answering</p>
+      <nav aria-label="Project navigation"><a href="#question">Question</a><a href="#method">Method</a><a href="#results">Results</a><a href="#limits">Limits</a><a href="#resources">Resources</a></nav>
+      <div class="sidebar-links"><a href="/">Portfolio home</a><a href="https://github.com/crimsonKn1ght/astraq-vl" target="_blank" rel="noreferrer">GitHub repository</a><a href="https://zenodo.org/records/21284851" target="_blank" rel="noreferrer">Preprint</a></div>
+    </aside>
+    <main>
+      <header class="hero">
+        <p class="eyebrow">RESEARCH PROJECT · 2026</p>
+        <h2>Teaching a small language model to work with astronomy images</h2>
+        <p class="lede">I built AstraQ VL around frozen CLIP and Qwen components. A connector first learns the visual language alignment. LoRA training then adapts the language model for astronomy captions and questions.</p>
+        <div class="hero-links"><a class="button primary" href="https://github.com/crimsonKn1ght/astraq-vl" target="_blank" rel="noreferrer">Read the code</a><a class="button" href="https://huggingface.co/grKnight/astraq-vl-stage2" target="_blank" rel="noreferrer">Stage 2 weights</a><a class="text-link" href="https://zenodo.org/records/21284851" target="_blank" rel="noreferrer">Read the preprint</a></div>
+        <dl class="facts"><div><dt>Trainable</dt><dd>22.4M parameters</dd></div><div><dt>Share trained</dt><dd>1.20 percent</dd></div><div><dt>Training data</dt><dd>161,653 records</dd></div><div><dt>Held out</dt><dd>3,271 records</dd></div></dl>
+      </header>
+
+      <section id="question">
+        <p class="eyebrow">THE QUESTION</p><h2>How far can staged adaptation go?</h2>
+        <div class="prose"><p>Astronomy visual question answering needs both image grounding and domain language. I wanted to study a setup where most of the base model remains fixed, so the experiment could focus on the alignment connector and a small set of language model adapters.</p><p>The project uses 29,151 training images and a disjoint set of 591 unseen images. Those held out images provide 3,271 caption and question records for evaluation.</p></div>
+      </section>
+
+      <section id="method">
+        <p class="eyebrow">METHOD</p><h2>Two stages with different jobs</h2>
+        <ol class="steps"><li><span>01</span><div><h3>Connector alignment</h3><p>Stage 1 freezes CLIP ViT L/14 and Qwen2.5 1.5B Instruct. A two layer MLP learns to map CLIP patch features into the language model embedding space.</p></div></li><li><span>02</span><div><h3>Instruction tuning</h3><p>Stage 2 starts from the trained connector and keeps it trainable. LoRA adapters are added across the Qwen projection layers while the base language model and vision tower remain frozen.</p></div></li><li><span>03</span><div><h3>Held out generation</h3><p>The final checkpoint is evaluated on every caption and question record from the unseen image split. Predictions and per sample metrics are included with the released artifacts.</p></div></li></ol>
+        <figure class="asset-figure"><img src="../assets/astraq/model_architecture.svg" alt="AstraQ VL Stage 2 architecture with frozen CLIP, trained connector, and Qwen LoRA adapters" /><figcaption>The Stage 2 architecture used for the released checkpoint.</figcaption></figure>
+      </section>
+
+      <section id="results">
+        <p class="eyebrow">HELD OUT RESULTS</p><div class="section-heading"><h2>Stage 1 and Stage 2</h2><p>All 3,271 held out records</p></div>
+        <div class="table-wrap"><table><thead><tr><th>Measure</th><th>Stage 1</th><th>Stage 2</th><th>Direction</th></tr></thead><tbody><tr><th>ROUGE L</th><td>0.3116</td><td>0.3404</td><td>Higher</td></tr><tr><th>Token F1</th><td>0.3672</td><td>0.3948</td><td>Higher</td></tr><tr><th>Exact match</th><td>0.0272</td><td>0.0339</td><td>Higher</td></tr><tr><th>Unsupported specifics per record</th><td>0.3733</td><td>0.3369</td><td>Lower</td></tr><tr><th>Specificity precision</th><td>0.1941</td><td>0.2353</td><td>Higher</td></tr></tbody></table></div>
+        <figure class="asset-figure"><img src="../assets/astraq/eval_loss_curve.png" alt="Held out validation loss falling from step 200 to step 2526" /><figcaption>Held out token loss on a fixed sample of 512 unseen records. The curve was reconstructed from saved checkpoints.</figcaption></figure>
+      </section>
+
+      <section id="limits">
+        <p class="eyebrow">READING THE RESULTS</p><h2>The comparison is useful, but not complete</h2>
+        <div class="note"><h3>Stage 2 improves several in domain measures</h3><p>Compared with Stage 1 on the same split, Stage 2 has better reference alignment and fewer unsupported specifics. These are held out generation results, not a broad astronomy benchmark.</p></div>
+        <div class="prose"><p>The Qwen2.5 VL 7B comparison has a much lower contradiction rate under the NLI proxy: 0.1764 compared with 0.5436 for AstraQ VL Stage 2. That result matters, so the page does not present AstraQ VL as generally better than the larger baseline.</p><p>CLIP processes images at 224 by 224 pixels, which limits fine astronomical detail. The base language model has 1.5 billion parameters, and LoRA adaptation has less capacity than full model tuning.</p></div>
+      </section>
+
+      <section id="resources">
+        <p class="eyebrow">RESOURCES</p><h2>Code, weights, and evaluation files</h2>
+        <div class="resource-list"><a href="https://github.com/crimsonKn1ght/astraq-vl" target="_blank" rel="noreferrer"><span><strong>Implementation</strong><small>Training, inference, scoring, and reproduction scripts</small></span><b>GitHub</b></a><a href="https://huggingface.co/grKnight/astraq-vl-stage1" target="_blank" rel="noreferrer"><span><strong>Stage 1 connector</strong><small>Three connector checkpoints and held out predictions</small></span><b>Hugging Face</b></a><a href="https://huggingface.co/grKnight/astraq-vl-stage2" target="_blank" rel="noreferrer"><span><strong>Stage 2 connector and LoRA</strong><small>Final checkpoint, metrics, and evaluation archives</small></span><b>Hugging Face</b></a><a href="https://huggingface.co/grKnight/astraq-vl-stage2/tree/main/evaluations" target="_blank" rel="noreferrer"><span><strong>Full held out evaluation</strong><small>Predictions and aggregate and per sample metrics</small></span><b>Artifacts</b></a><a href="https://zenodo.org/records/21284851" target="_blank" rel="noreferrer"><span><strong>AstraQ VL preprint</strong><small>Method, experiments, and citation record</small></span><b>Zenodo</b></a></div>
+        <p class="source-note">The released checkpoint contains the connector and LoRA adapter. It also requires the repository code and the two base models.</p>
+      </section>
+      <footer><span>&copy; <span id="year"></span> Gourab Roy</span><a href="#top">Back to top</a></footer>
+    </main>
+  </div>
+  <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+</body>
+</html>

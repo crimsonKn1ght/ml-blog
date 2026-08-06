@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Attention-guided osteoporosis detection, a texture-based deep learning study by Gourab Roy." />
+  <meta name="theme-color" content="#fbf9f5" />
+  <title>Attention-guided osteoporosis detection &middot; Gourab Roy</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&amp;family=Source+Sans+3:wght@400;500;600;700&amp;display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../project.css" />
+</head>
+<body id="top" class="project-op">
+  <header class="mobile-header"><a href="/">Gourab Roy</a><a class="mobile-home" href="/">Home</a></header>
+  <div class="site-shell">
+    <aside class="sidebar">
+      <a class="wordmark" href="/">GR</a><h1>Osteoporosis detection</h1><p class="role">Texture features and a CBAM-enhanced U-Net for knee osteoporosis</p>
+      <nav aria-label="Project navigation"><a href="#question">Question</a><a href="#method">Method</a><a href="#training">Training</a><a href="#notes">Notes</a><a href="#reproduce">Reproduce</a></nav>
+      <div class="sidebar-links"><a href="/">Portfolio home</a><a href="https://github.com/crimsonKn1ght/Code-OP-detection-model" target="_blank" rel="noreferrer">GitHub repository</a></div>
+    </aside>
+    <main>
+      <header class="hero">
+        <p class="eyebrow">ACCEPTED PAPER &middot; ICADCML 2026</p><h2>Reading knee texture for osteoporosis, not just shape</h2>
+        <p class="lede">With Arup Kumar Pal, Manish Raj, and Jitesh Pradhan, I worked on texture-based feature extraction paired with a CBAM-enhanced U-Net for automated knee osteoporosis detection. The model supports both a binary reading and a three-class severity split.</p>
+        <div class="hero-links"><a class="button primary" href="https://github.com/crimsonKn1ght/Code-OP-detection-model" target="_blank" rel="noreferrer">Read the code</a></div>
+        <dl class="facts"><div><dt>Encoder</dt><dd>ResNet + CBAM</dd></div><div><dt>Context module</dt><dd>ASPP</dd></div><div><dt>Classification</dt><dd>Binary and 3-class</dd></div><div><dt>Input size</dt><dd>128 &times; 128</dd></div></dl>
+      </header>
+
+      <section id="question">
+        <p class="eyebrow">THE QUESTION</p><h2>Bone texture carries signal that shape alone misses</h2>
+        <div class="prose"><p>Osteoporosis shows up as a loss of bone density and a change in the internal trabecular pattern, not only as a change in outline. A model that only looks at overall shape can miss that texture, so we wanted an approach that extracts texture descriptors explicitly and lets a learned encoder build on top of them.</p><p>The classification target is set up two ways in the codebase: a binary read for presence or absence, and a three-class read for finer severity grading.</p></div>
+      </section>
+
+      <section id="method">
+        <p class="eyebrow">METHOD</p><h2>Texture features feeding an attention U-Net</h2>
+        <ol class="steps"><li><span>01</span><div><h3>Texture feature extraction</h3><p>Hand-crafted texture descriptors are extracted from each knee image, then reduced with PCA: 75 components for the binary setting, 90 for the three-class setting.</p></div></li><li><span>02</span><div><h3>ResNet encoder with CBAM</h3><p>A ResNet-based encoder builds learned image features. A Convolutional Block Attention Module is applied so the network weights the channels and regions that matter most for bone texture.</p></div></li><li><span>03</span><div><h3>ASPP for multi-scale context</h3><p>An Atrous Spatial Pyramid Pooling module gathers context at several receptive field sizes before the features reach the decoder.</p></div></li><li><span>04</span><div><h3>Decoder and classification</h3><p>The decoder combines the multi-scale features with the reduced texture descriptors, and a classification head outputs the binary or three-class osteoporosis label.</p></div></li></ol>
+      </section>
+
+      <section id="training">
+        <p class="eyebrow">TRAINING SETUP</p><h2>Default configuration</h2>
+        <div class="defaults"><div><span>Batch size</span><strong>16</strong></div><div><span>Epochs</span><strong>50</strong></div><div><span>Learning rate</span><strong>1e-4</strong></div><div><span>Early stopping</span><strong>Patience 5</strong></div></div>
+      </section>
+
+      <section id="notes">
+        <p class="eyebrow">CURRENT EVIDENCE</p><h2>Accepted, with a benchmark table still to come</h2>
+        <div class="note"><h3>No public accuracy table is published on this page yet</h3><p>The paper has been accepted at ICADCML 2026, and the repository contains the full texture extraction, model, and training code. A public leaderboard-style results table has not been added here, and one will follow once the camera-ready results are finalized.</p></div>
+        <div class="prose"><p>The seed is fixed in the default configuration, which keeps individual training runs reproducible, but no claim of clinical validation is made at this stage.</p></div>
+      </section>
+
+      <section id="reproduce">
+        <p class="eyebrow">REPRODUCE</p><h2>Code and paper status</h2>
+        <div class="resource-list"><a href="https://github.com/crimsonKn1ght/Code-OP-detection-model" target="_blank" rel="noreferrer"><span><strong>Implementation</strong><small>Texture extraction, CBAM U-Net, ASPP, and training code</small></span><b>GitHub</b></a></div>
+        <p class="source-note">Texture-based Feature Extraction and CBAM-Enhanced U-Net for Automated Knee Osteoporosis Detection &middot; Roy, Pal, Raj, Pradhan &middot; accepted at ICADCML 2026.</p>
+      </section>
+      <footer><span>&copy; <span id="year"></span> Gourab Roy</span><a href="#top">Back to top</a></footer>
+    </main>
+  </div>
+  <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+</body>
+</html>

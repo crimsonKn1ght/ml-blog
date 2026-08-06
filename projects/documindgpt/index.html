@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="DocuMindGPT, a document grounded question answering CLI by Gourab Roy." />
+  <meta name="theme-color" content="#f8fbfa" />
+  <title>DocuMindGPT · Gourab Roy</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&amp;family=Source+Sans+3:wght@400;500;600;700&amp;display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../project.css" />
+</head>
+<body id="top" class="project-docu">
+  <header class="mobile-header"><a href="/">Gourab Roy</a><a class="mobile-home" href="/">Home</a></header>
+  <div class="site-shell">
+    <aside class="sidebar">
+      <a class="wordmark" href="/">GR</a><h1>DocuMindGPT</h1><p class="role">Document grounded question answering from the command line</p>
+      <nav aria-label="Project navigation"><a href="#purpose">Purpose</a><a href="#workflow">Workflow</a><a href="#audit">Answer audit</a><a href="#evidence">Evidence</a><a href="#setup">Setup</a></nav>
+      <div class="sidebar-links"><a href="/">Portfolio home</a><a href="https://github.com/crimsonKn1ght/DocuMindGPT" target="_blank" rel="noreferrer">GitHub repository</a></div>
+    </aside>
+    <main>
+      <header class="hero">
+        <p class="eyebrow">SOFTWARE PROJECT · 2026</p><h2>A small RAG system for asking questions about your own documents</h2>
+        <p class="lede">I built DocuMindGPT as a command line workflow for PDFs and text files. It stores document chunks in Supabase, retrieves relevant context for each question, and asks a second model to audit the generated answer.</p>
+        <div class="hero-links"><a class="button primary" href="https://github.com/crimsonKn1ght/DocuMindGPT" target="_blank" rel="noreferrer">Read the code</a><a class="text-link" href="#setup">Run it locally</a></div>
+        <dl class="facts"><div><dt>Input</dt><dd>PDF and text</dd></div><div><dt>Storage</dt><dd>Supabase pgvector</dd></div><div><dt>Generator</dt><dd>Gemini 2.5 Flash</dd></div><div><dt>Interface</dt><dd>Python CLI</dd></div></dl>
+      </header>
+
+      <section id="purpose">
+        <p class="eyebrow">PURPOSE</p><h2>Keep answers tied to a supplied source</h2>
+        <div class="prose"><p>The tool is meant for situations where the answer should come from a known document rather than the model memory. A system instruction tells the generator to use only the retrieved context and to say when the context does not contain an answer.</p><p>I separated ingestion from chat so a document can be processed once and queried repeatedly. The command line keeps the example compact and makes each stage easy to inspect.</p></div>
+      </section>
+
+      <section id="workflow">
+        <p class="eyebrow">WORKFLOW</p><h2>From a file to an audited answer</h2>
+        <div class="flow-grid"><article><span>01</span><strong>Read and split</strong><p>Extract text from a PDF or read a plain text file, then create overlapping chunks.</p></article><article><span>02</span><strong>Embed and store</strong><p>Generate Gemini document embeddings and insert the chunks into Supabase.</p></article><article><span>03</span><strong>Retrieve and answer</strong><p>Embed the question, retrieve matching chunks, and ask Gemini to answer from that context.</p></article><article><span>04</span><strong>Audit</strong><p>Send the question, context, and answer to a second evaluation prompt.</p></article></div>
+        <div class="defaults"><div><span>Chunk size</span><strong>1,000 characters</strong></div><div><span>Overlap</span><strong>200 characters</strong></div><div><span>Retrieved</span><strong>Top 5 chunks</strong></div><div><span>Threshold</span><strong>0.5 similarity</strong></div></div>
+      </section>
+
+      <section id="audit">
+        <p class="eyebrow">ANSWER AUDIT</p><h2>A useful check, not an independent judge</h2>
+        <div class="comparison"><article><span class="comparison-label">Generation input</span><strong>Question + retrieved context</strong><p>The answer model is instructed not to add information beyond the supplied chunks.</p></article><div class="comparison-mark" aria-hidden="true">then</div><article class="compact-card"><span class="comparison-label">Audit output</span><strong>Score + verdict + reason</strong><p>The evaluator checks grounding and relevance, then returns structured JSON.</p></article></div>
+        <div class="prose"><p>The score runs from 1 through 10. A score of 7 or more receives a Pass verdict. If retrieval returns no context, the audit is skipped.</p><p>The generator and evaluator both use Gemini 2.5 Flash. The audit can help during interactive use, but it is still a model based assessment and should not be treated as independent verification.</p></div>
+      </section>
+
+      <section id="evidence">
+        <p class="eyebrow">CURRENT EVIDENCE</p><h2>What is public today</h2>
+        <div class="note"><h3>The repository does not publish aggregate benchmark results</h3><p>The code implements retrieval, grounded generation, and a per answer audit. It does not currently include a benchmark dataset, a saved evaluation run, or an aggregate accuracy table.</p></div>
+        <ul class="plain-list"><li><strong>Implemented</strong><p>PDF and text ingestion, chunking, batch embedding, Supabase insertion, similarity retrieval, grounded prompting, interactive chat, and JSON audit parsing.</p></li><li><strong>Handled failures</strong><p>The CLI reports missing files, empty PDFs, missing credentials, failed API calls, absent retrieval context, and malformed evaluator output.</p></li><li><strong>Still needed for comparative claims</strong><p>A fixed evaluation set, retrieval measures, answer quality measures, and comparison with a baseline under the same documents and questions.</p></li></ul>
+      </section>
+
+      <section id="setup">
+        <p class="eyebrow">SETUP</p><h2>Run the command line tool</h2>
+        <div class="prose"><p>Create a Supabase project, run `setup.sql`, and place the Gemini and Supabase credentials in a local `.env` file. Credentials should not be committed.</p></div>
+        <div class="code-block"><code>pip install -r requirements.txt
+python main.py upload path/to/document.pdf
+python main.py chat</code></div>
+        <div class="resource-list"><a href="https://github.com/crimsonKn1ght/DocuMindGPT" target="_blank" rel="noreferrer"><span><strong>Implementation</strong><small>CLI, ingestion, retrieval, generation, audit, and database setup</small></span><b>GitHub</b></a><a href="https://supabase.com/docs/guides/ai/vector-columns" target="_blank" rel="noreferrer"><span><strong>Supabase vector guide</strong><small>Background on pgvector storage and search</small></span><b>Documentation</b></a></div>
+      </section>
+      <footer><span>&copy; <span id="year"></span> Gourab Roy</span><a href="#top">Back to top</a></footer>
+    </main>
+  </div>
+  <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+</body>
+</html>
