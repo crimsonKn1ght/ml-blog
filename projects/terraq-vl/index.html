@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="TerraQ-VL, a remote-sensing vision language model project by Gourab Roy." />
+  <meta name="theme-color" content="#f8faf4" />
+  <title>TerraQ-VL · Gourab Roy</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&amp;family=Source+Sans+3:wght@400;500;600;700&amp;display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../project.css" />
+</head>
+<body id="top" class="project-terra">
+  <header class="mobile-header"><a href="/">Gourab Roy</a><a class="mobile-home" href="/">Home</a></header>
+  <div class="site-shell">
+    <aside class="sidebar">
+      <a class="wordmark" href="/">GR</a>
+      <h1>TerraQ-VL</h1>
+      <p class="role">Adapting a compact vision language recipe to remote sensing</p>
+      <nav aria-label="Project navigation"><a href="#question">Question</a><a href="#method">Method</a><a href="#data">Data</a><a href="#results">Results</a><a href="#limits">Limits</a><a href="#resources">Resources</a></nav>
+      <div class="sidebar-links"><a href="/">Portfolio home</a><a href="https://github.com/crimsonKn1ght/terraq-vl" target="_blank" rel="noreferrer">GitHub repository</a><a href="https://huggingface.co/grKnight/terraq-vl" target="_blank" rel="noreferrer">Model weights</a></div>
+    </aside>
+    <main>
+      <header class="hero">
+        <p class="eyebrow">RESEARCH PROJECT · 2026</p>
+        <h2>Adapting a compact vision-language model to remote sensing</h2>
+        <p class="lede">TerraQ-VL applies staged visual-language alignment to aerial and satellite imagery. A connector first aligns frozen CLIP features with Qwen2.5-3B, then LoRA instruction tuning adapts the language model for captions and visual questions.</p>
+        <div class="hero-links"><a class="button primary" href="https://github.com/crimsonKn1ght/terraq-vl" target="_blank" rel="noreferrer">Read the code</a><a class="button" href="https://huggingface.co/grKnight/terraq-vl" target="_blank" rel="noreferrer">Model weights</a><a class="text-link" href="https://doi.org/10.57967/hf/9584" target="_blank" rel="noreferrer">Model DOI</a></div>
+        <dl class="facts"><div><dt>Training data</dt><dd>139,575 records</dd></div><div><dt>Training images</dt><dd>19,861 images</dd></div><div><dt>Stage 2 trainable</dt><dd>36.2M parameters</dd></div><div><dt>Held-out test</dt><dd>1,367 records</dd></div></dl>
+      </header>
+
+      <section id="question">
+        <p class="eyebrow">THE QUESTION</p><h2>Can the same efficient recipe work for remote-sensing images?</h2>
+        <div class="prose"><p>Aerial and satellite images pose a different grounding problem from ordinary photographs. The model must connect overhead visual patterns with descriptions of land use, infrastructure, spatial relationships, and object counts.</p><p>TerraQ-VL tests whether a frozen vision encoder and mostly frozen language model can learn that connection through a small trainable connector followed by parameter-efficient instruction tuning.</p></div>
+      </section>
+
+      <section id="method">
+        <p class="eyebrow">METHOD</p><h2>Alignment first, instruction tuning second</h2>
+        <ol class="steps"><li><span>01</span><div><h3>Encode overhead imagery</h3><p>A frozen CLIP ViT L/14 converts each image into visual patch features. Keeping the vision tower fixed reduces the number of parameters that need training.</p></div></li><li><span>02</span><div><h3>Learn the visual-language bridge</h3><p>A trainable MLP connector maps the CLIP features into the embedding space of Qwen2.5-3B-Instruct. Stage 1 trains this connector while both base models remain frozen.</p></div></li><li><span>03</span><div><h3>Tune for captions and questions</h3><p>Stage 2 starts from the aligned connector and adds LoRA adapters to the language model. The connector and adapters are trained together while the vision encoder and base language model weights stay frozen.</p></div></li></ol>
+      </section>
+
+      <section id="data">
+        <p class="eyebrow">DATA</p><h2>A split that keeps images separate</h2>
+        <div class="prose"><p>Training uses VRSBench, a collection of aerial and satellite imagery with detailed captions and visual question-answer turns. The split is made by image, so every caption and question associated with an image stays on the same side of the train, validation, or test boundary.</p></div>
+        <div class="table-wrap"><table><thead><tr><th>Split</th><th>Images</th><th>Records</th></tr></thead><tbody><tr><th>Training</th><td>19,861</td><td>139,575</td></tr><tr><th>Validation</th><td>204</td><td>1,448</td></tr><tr><th>Held-out test</th><td>197</td><td>1,367</td></tr></tbody></table></div>
+      </section>
+
+      <section id="results">
+        <p class="eyebrow">TRAINING RESULTS</p><div class="section-heading"><h2>Released checkpoints for both stages</h2><p>Held-out validation loss, Stage 1</p></div>
+        <div class="run-details">
+          <article><span>Stage 1</span><strong>3,270 steps</strong><p>Across three epochs.<br />Held-out validation loss: 1.793 &rarr; 1.209</p></article>
+          <article><span>Stage 2</span><strong>2,180 steps</strong><p>Instruction-tuning steps.<br />Connector and LoRA adapters trained together.</p></article>
+        </div>
+        <div class="prose" style="margin-top:28px"><p>The release includes all Stage 1 and Stage 2 checkpoints, configurations, held-out loss curves, and predictions. Stage 2 predictions cover every record in the held-out test split.</p></div>
+      </section>
+
+      <section id="limits">
+        <p class="eyebrow">READING THE PROJECT</p><h2>Useful for research, with clear constraints</h2>
+        <div class="note"><h3>The released weights are non-commercial</h3><p>The Qwen2.5-3B base model uses the Qwen Research License, and VRSBench is released under CC BY-NC 4.0. The resulting TerraQ-VL checkpoints are therefore intended for research and non-commercial use.</p></div>
+        <div class="prose"><p>CLIP processes images at 224 by 224 pixels, which can discard small objects and fine spatial detail in large remote-sensing scenes. The released results document training and held-out predictions, but they should not be read as a broad comparison against every remote-sensing vision-language model.</p></div>
+      </section>
+
+      <section id="resources">
+        <p class="eyebrow">RESOURCES</p><h2>Code, checkpoints, and data</h2>
+        <div class="resource-list">
+          <a href="https://github.com/crimsonKn1ght/terraq-vl" target="_blank" rel="noreferrer"><span><strong>Implementation</strong><small>Training, inference, evaluation, and data-building scripts</small></span><b>GitHub</b></a>
+          <a href="https://huggingface.co/grKnight/terraq-vl" target="_blank" rel="noreferrer"><span><strong>TerraQ-VL checkpoints</strong><small>Stage 1 and Stage 2 weights, curves, configurations, and predictions</small></span><b>Hugging Face</b></a>
+          <a href="https://huggingface.co/datasets/xiang709/VRSBench" target="_blank" rel="noreferrer"><span><strong>VRSBench</strong><small>Remote-sensing captions and visual question-answer data</small></span><b>Dataset</b></a>
+          <a href="https://doi.org/10.57967/hf/9584" target="_blank" rel="noreferrer"><span><strong>Model DOI</strong><small>Persistent citation record for the released weights</small></span><b>DOI</b></a>
+        </div>
+        <p class="source-note">The checkpoints require the repository code and base models. See the model card for exact loading instructions and license terms.</p>
+      </section>
+      <footer><span>&copy; <span id="year"></span> Gourab Roy</span><a href="#top">Back to top</a></footer>
+    </main>
+  </div>
+  <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+</body>
+</html>
