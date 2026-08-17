@@ -19,14 +19,14 @@
       <h1>AstraQ VL</h1>
       <p class="role">Parameter focused training for astronomy visual question answering</p>
       <nav aria-label="Project navigation"><a href="#question">Question</a><a href="#method">Method</a><a href="#results">Results</a><a href="#limits">Limits</a><a href="#resources">Resources</a></nav>
-      <div class="sidebar-links"><a href="/">Portfolio home</a><a href="https://github.com/crimsonKn1ght/astraq-vl" target="_blank" rel="noreferrer">GitHub repository</a><a href="https://zenodo.org/records/21284851" target="_blank" rel="noreferrer">Preprint</a></div>
+      <div class="sidebar-links"><a href="/">Portfolio home</a><a href="https://zenodo.org/records/21284851" target="_blank" rel="noreferrer">Preprint</a><a href="https://github.com/crimsonKn1ght/astraq-vl" target="_blank" rel="noreferrer">GitHub repository</a><a href="https://huggingface.co/grKnight/astraq-vl" target="_blank" rel="noreferrer">Model weights</a></div>
     </aside>
     <main>
       <header class="hero">
         <p class="eyebrow">RESEARCH PROJECT · 2026</p>
         <h2>Teaching a small language model to work with astronomy images</h2>
         <p class="lede">I built AstraQ VL around frozen CLIP and Qwen components. A connector first learns the visual language alignment. LoRA training then adapts the language model for astronomy captions and questions.</p>
-        <div class="hero-links"><a class="button primary" href="https://github.com/crimsonKn1ght/astraq-vl" target="_blank" rel="noreferrer">Read the code</a><a class="button" href="https://huggingface.co/grKnight/astraq-vl-stage2" target="_blank" rel="noreferrer">Stage 2 weights</a><a class="text-link" href="https://zenodo.org/records/21284851" target="_blank" rel="noreferrer">Read the preprint</a></div>
+        <div class="hero-links"><a class="button primary" href="https://zenodo.org/records/21284851" target="_blank" rel="noreferrer">Read the preprint</a><a class="button" href="https://github.com/crimsonKn1ght/astraq-vl" target="_blank" rel="noreferrer">Read the code</a><a class="button" href="https://huggingface.co/grKnight/astraq-vl" target="_blank" rel="noreferrer">Model weights</a></div>
         <dl class="facts"><div><dt>Trainable</dt><dd>22.4M parameters</dd></div><div><dt>Share trained</dt><dd>1.20 percent</dd></div><div><dt>Training data</dt><dd>161,653 records</dd></div><div><dt>Held out</dt><dd>3,271 records</dd></div></dl>
       </header>
 
@@ -55,7 +55,7 @@
 
       <section id="resources">
         <p class="eyebrow">RESOURCES</p><h2>Code, weights, and evaluation files</h2>
-        <div class="resource-list"><a href="https://github.com/crimsonKn1ght/astraq-vl" target="_blank" rel="noreferrer"><span><strong>Implementation</strong><small>Training, inference, scoring, and reproduction scripts</small></span><b>GitHub</b></a><a href="https://huggingface.co/grKnight/astraq-vl-stage1" target="_blank" rel="noreferrer"><span><strong>Stage 1 connector</strong><small>Three connector checkpoints and held out predictions</small></span><b>Hugging Face</b></a><a href="https://huggingface.co/grKnight/astraq-vl-stage2" target="_blank" rel="noreferrer"><span><strong>Stage 2 connector and LoRA</strong><small>Final checkpoint, metrics, and evaluation archives</small></span><b>Hugging Face</b></a><a href="https://huggingface.co/grKnight/astraq-vl-stage2/tree/main/evaluations" target="_blank" rel="noreferrer"><span><strong>Full held out evaluation</strong><small>Predictions and aggregate and per sample metrics</small></span><b>Artifacts</b></a><a href="https://zenodo.org/records/21284851" target="_blank" rel="noreferrer"><span><strong>AstraQ VL preprint</strong><small>Method, experiments, and citation record</small></span><b>Zenodo</b></a></div>
+        <div class="resource-list"><a href="https://zenodo.org/records/21284851" target="_blank" rel="noreferrer"><span><strong>AstraQ VL preprint</strong><small>Method, experiments, and citation record</small></span><b>Zenodo</b></a><a href="https://github.com/crimsonKn1ght/astraq-vl" target="_blank" rel="noreferrer"><span><strong>Implementation</strong><small>Training, inference, scoring, and reproduction scripts</small></span><b>GitHub</b></a><a href="https://huggingface.co/grKnight/astraq-vl" target="_blank" rel="noreferrer"><span><strong>AstraQ VL weights and artifacts</strong><small>Stage 1 and Stage 2 checkpoints, predictions, metrics, and evaluation files</small></span><b>Hugging Face</b></a></div>
         <p class="source-note">The released checkpoint contains the connector and LoRA adapter. It also requires the repository code and the two base models.</p>
       </section>
       <footer><span>&copy; <span id="year"></span> Gourab Roy</span><a href="#top">Back to top</a></footer>
